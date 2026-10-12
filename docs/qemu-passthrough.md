@@ -44,6 +44,7 @@ libvirt domain XML, guest-side MPSS install and diagnostics scripts). See
 |------|-------------------|-------|
 | VT-x and VT-d on | BIOS/UEFI setup | **[host]** both required |
 | Above-4G decoding / 64-bit MMIO | BIOS/UEFI setup | **[host]** BELIEF: needed for the 8 GB 64-bit prefetchable BAR0 (SOURCED BAR size). Without it the firmware may not assign BAR0 and the card does not work, even on bare metal. |
+| no above-4G option and BAR0 unassigned | kernel cmdline `pci=realloc` (more options in `docs/mpss-compatibility.md`, "Large-BAR assignment") | **[host]** UNVERIFIED for KNC; one KNL-over-Thunderbolt report. Operator edits the bootloader config |
 | IOMMU on | kernel cmdline `intel_iommu=on iommu=pt` | **[host]** operator edits the bootloader config; this repo never does |
 | verify | `dmesg \| grep -i -e DMAR -e IOMMU` | **[host]** expect "IOMMU enabled" / DMAR remapping lines |
 

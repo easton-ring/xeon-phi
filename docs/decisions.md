@@ -138,4 +138,4 @@ are recorded in `docs/mpss-compatibility.md` as fallbacks only. With VFIO
 passthrough the lab host kernel never loads the `mic` driver, so porting it
 to a 6.x kernel is not on the Milestone 2 path. The first fallback is a
 CentOS 7.9 guest with Keijser's patched 3.8.6 modules. KNL-stack ports
-(MPSS 4.x) are excluded: they do not drive the KNC 5110P.
+(MPSS 4.x) are excluded: they do not drive the KNC 5110P. devcapcap/XeonPhi (read in full) has no booted card on kernel 5.6, and its KNC attempts with ported 3.x modules froze the host.

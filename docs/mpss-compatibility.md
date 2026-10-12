@@ -126,7 +126,7 @@ Statuses were checked 2026-10-12, using search excerpts only.
 |---------|-------|--------|
 | Jan Just Keijser (Nikhef), `jjkeijser/mpss` | Patched MPSS 3.8.6 `mpss-modules` for newer RHEL/CentOS kernels, with RPMs, SRPMs and build notes. KNC. | SOURCED: page "Intel Xeon Phi (KNC) MPSS software and kernel modules for CentOS 7&8" <https://www.nikhef.nl/~janjust/mpss>, <https://jjkeijser.github.io/mpss/>, <https://github.com/jjkeijser/mpss>. RPM posts for CentOS 7.5, 7.6 and 7.8: <https://community.intel.com/t5/Software-Archive/MPSS-3-8-6-modules-for-CentOS-7-8/m-p/1173726>. "Use at your own risk; tested on my CentOS 7.8 box." Coverage up to CentOS 8.5 (kernel 4.18) was claimed in an earlier summary but not confirmed by a quote. |
 | `ruribe17`: KNC 5110P drivers and utilities for AlmaLinux | Port based on MPSS 3.8.6 | SOURCED for **AlmaLinux 8.10** (needs Python 2 fixes in mpss-micmgmt/miccheck): <https://github.com/ruribe17/Xeon-Phi-5110P-KNC-Drivers-Utilities-for-AlmaLinux-8.1>. An **AlmaLinux 9 / kernel 5.14** variant (said to be updated Feb 2025) was claimed in an earlier summary; **not found** in search, so UNVERIFIED. |
-| `devcapcap/XeonPhi` | MPSS **4.4.1** modules on kernel 5.6-rc1 / Ubuntu 20.04, with freezes on some cards | **UNVERIFIED** (not found). Even if accurate, MPSS 4.x is the **KNL** (x200) stack; it does not drive a 5110P (KNC, x100). An Intel forum reply in the MPSS-modules threads says KNL PCIe cards need MPSS 4.4, which "is not publicly available" and would need porting to kernel 4.18+ (search excerpt; exact thread not pinned, see <https://community.intel.com/t5/Software-Archive/MPSS-3-8-6-modules-for-CentOS-7-8/m-p/1173726>). Not usable here (brief §1.1: KNC is not KNL). |
+| `devcapcap/XeonPhi` <https://github.com/devcapcap/XeonPhi> (last commit 2022-02-25) | MPSS **4.4.1** KNL modules, libscif, mpssd on kernel 5.6-rc1 / Ubuntu 20.04 | **PRIMARY** (README read 2026-10-12). The host is a MacBook Air with the card in an AKiTiO Thunderbolt 3 enclosure. **KNL 7220A + 4.4.1:** modules load (`mic_x200`), `micctrl -s`, `miccheck` and `micinfo` respond, but "the last missing step is booting the card os": **the card OS never booted.** **KNC 3120A + ported 3.8.6 or 3.6.1 modules:** "the system is freezing (bad pointer deference … vhost_dev_init)". So there is **no working KNC result on 5.x** here, and the 4.4.1 code is the KNL (x200) stack, which does not drive a 5110P. Useful parts: the `vhost_dev_init` crash point for anyone porting 3.x to 5.x, and the BAR-assignment kernel parameters below. An Intel forum reply also says MPSS 4.4 for KNL PCIe cards was not publicly released (search excerpt, <https://community.intel.com/t5/Software-Archive/MPSS-3-8-6-modules-for-CentOS-7-8/m-p/1173726>). |
 | `subgeniuskitty`: writeup and module port based on MPSS 3.8.6 | | **UNVERIFIED** (not found in search). |
 | Gentoo ebuild (older) | `mic` module ported to Linux 3.17.8 with small edits | SOURCED: <https://community.intel.com/t5/Software-Archive/Xeon-Phi-and-Gentoo/m-p/1051377> |
 | xdsopl `mpss-modules` | a GitHub copy of the modules | SOURCED (exists): <https://github-redirect.dependabot.com/xdsopl/mpss-modules>; contents not reviewed |
@@ -143,6 +143,19 @@ Statuses were checked 2026-10-12, using search excerpts only.
 3. Record which module build (URL plus SHA-256 of the RPM) was used in
    `results/hw/<date>/diag/`. Results from it count as unofficial-driver
    results.
+
+**Large-BAR assignment without an "Above 4G decoding" BIOS option**
+(UNVERIFIED for KNC; operator step, never scripted). On a machine without
+that option, the devcapcap README shows the 64-bit prefetchable BAR as
+`<unassigned> [disabled]` until the kernel was told to reallocate. With
+`GRUB_CMDLINE_LINUX="hpbussize=0x33,realloc,hpmemsize=2M,hpmmioprefsize=64G,nocrs pcie_ports=native"`
+(quoted verbatim; in standard kernel syntax these are suboptions of `pci=`,
+i.e. `pci=hpbussize=0x33,realloc,…,nocrs`), the KNL card's
+`Memory at 383000000000 (64-bit, prefetchable) [size=32G]` was assigned. That
+setup was Thunderbolt hotplug and a KNL card. For the 5110P, with its 8 GB BAR0
+behind a normal slot, try `pci=realloc` on the **host** first, and only if
+`lspci -vvv -d 8086:2250` shows BAR0 unassigned. VFIO cannot pass through a
+BAR the host never assigned.
 
 A forum reply on Keijser's RPMs blamed a card that "wouldn't be used" on the
 BIOS **"Above 4G decoding"** setting
