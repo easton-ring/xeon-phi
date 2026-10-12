@@ -1,0 +1,5 @@
+$ PYTHONPATH=python <torchsig-venv>/bin/python -m pytest -v tests/test_torchsig.py   # 2026-10-12T01:14:57Z
+platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0 -- /tmp/claude-0/tsvenv/bin/python
+tests/test_torchsig.py::test_torchsig_dataset_roundtrip PASSED           [100%]
+============================== 1 passed in 4.44s ===============================
+torchsig 2.2.0 torch 2.14.1+cu130 numpy 2.5.4
