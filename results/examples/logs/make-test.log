@@ -6,8 +6,8 @@ gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 [  3%] Building C object CMakeFiles/knc_obj.dir/csrc/src/sha256.c.o
-[  7%] Building C object CMakeFiles/knc_obj.dir/csrc/src/timing.c.o
-[ 10%] Building C object CMakeFiles/knc_obj.dir/csrc/src/crc32.c.o
+[  7%] Building C object CMakeFiles/knc_obj.dir/csrc/src/crc32.c.o
+[ 10%] Building C object CMakeFiles/knc_obj.dir/csrc/src/timing.c.o
 [ 14%] Building C object CMakeFiles/knc_obj.dir/csrc/src/kncds.c.o
 [ 17%] Building C object CMakeFiles/knc_obj.dir/csrc/src/kernels.c.o
 [ 21%] Building C object CMakeFiles/knc_obj.dir/csrc/src/fft.c.o
@@ -21,8 +21,8 @@ gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
-[ 32%] Linking C static library libknc_core.a
-[ 35%] Linking C shared library libknc.so
+[ 32%] Linking C shared library libknc.so
+[ 35%] Linking C static library libknc_core.a
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 [ 35%] Built target knc_shared
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
@@ -32,37 +32,37 @@ gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 [ 39%] Building C object CMakeFiles/test_hash.dir/csrc/tests/test_hash.c.o
-[ 42%] Building C object CMakeFiles/knc_bench.dir/csrc/tools/knc_bench.c.o
+[ 42%] Building C object CMakeFiles/knc_validate.dir/csrc/tools/knc_validate.c.o
+[ 46%] Building C object CMakeFiles/knc_bench.dir/csrc/tools/knc_bench.c.o
 [ 50%] Building C object CMakeFiles/knc_infer.dir/csrc/tools/knc_infer.c.o
-[ 50%] Building C object CMakeFiles/knc_validate.dir/csrc/tools/knc_validate.c.o
-[ 53%] Linking C executable test_hash
-[ 57%] Linking C executable knc_infer
-[ 60%] Linking C executable knc_validate
+[ 53%] Linking C executable knc_validate
+[ 57%] Linking C executable test_hash
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-[ 60%] Built target test_hash
+[ 60%] Linking C executable knc_infer
+[ 60%] Built target knc_validate
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 [ 64%] Building C object CMakeFiles/test_kncds.dir/csrc/tests/test_kncds.c.o
+[ 64%] Built target test_hash
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-[ 64%] Built target knc_validate
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
 [ 64%] Built target knc_infer
-gmake[3]: Entering directory '/home/user/xeon-phi/build'
-gmake[3]: Entering directory '/home/user/xeon-phi/build'
-gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-gmake[3]: Entering directory '/home/user/xeon-phi/build'
-gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-gmake[3]: Entering directory '/home/user/xeon-phi/build'
 [ 67%] Building C object CMakeFiles/test_kernels.dir/csrc/tests/test_kernels.c.o
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
 [ 71%] Building C object CMakeFiles/test_fft.dir/csrc/tests/test_fft.c.o
 [ 75%] Linking C executable test_kncds
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
@@ -72,24 +72,24 @@ gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 [ 78%] Building C object CMakeFiles/test_features.dir/csrc/tests/test_features.c.o
 [ 82%] Linking C executable test_fft
-[ 85%] Linking C executable test_features
+[ 85%] Linking C executable test_kernels
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 [ 85%] Built target test_fft
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 gmake[3]: Entering directory '/home/user/xeon-phi/build'
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-[ 89%] Built target test_features
-[ 92%] Building C object CMakeFiles/test_model.dir/csrc/tests/test_model.c.o
-[ 92%] Linking C executable knc_bench
-[ 96%] Linking C executable test_kernels
+[ 89%] Building C object CMakeFiles/test_model.dir/csrc/tests/test_model.c.o
+[ 92%] Linking C executable test_features
+[ 92%] Built target test_kernels
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
-[100%] Linking C executable test_model
-[100%] Built target knc_bench
-gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 92%] Built target test_features
+[ 96%] Linking C executable test_model
+[100%] Linking C executable knc_bench
 gmake[3]: Leaving directory '/home/user/xeon-phi/build'
 [100%] Built target test_model
-[100%] Built target test_kernels
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[100%] Built target knc_bench
 gmake[2]: Leaving directory '/home/user/xeon-phi/build'
 gmake[1]: Leaving directory '/home/user/xeon-phi/build'
 cd build && ctest --output-on-failure
@@ -101,7 +101,7 @@ Test project /home/user/xeon-phi/build
     Start 3: test_kernels
 3/6 Test #3: test_kernels .....................   Passed    0.00 sec
     Start 4: test_fft
-4/6 Test #4: test_fft .........................   Passed    1.52 sec
+4/6 Test #4: test_fft .........................   Passed    1.53 sec
     Start 5: test_features
 5/6 Test #5: test_features ....................   Passed    0.00 sec
     Start 6: test_model
@@ -115,8 +115,8 @@ KNC_BUILD_DIR=/home/user/xeon-phi/build /tmp/claude-0/freshvenv/bin/python -m py
 .................................                                        [100%]
 =========================== short test summary info ============================
 SKIPPED [1] tests/test_torchsig.py:7: torchsig not installed (optional [torchsig] extra; CPU-only torch index is unreachable here, see docs/torchsig.md)
-105 passed, 1 skipped in 1.57s
+105 passed, 1 skipped in 1.43s
 
-real	0m5.023s
-user	0m7.873s
-sys	0m0.925s
+real	0m4.939s
+user	0m7.535s
+sys	0m0.850s

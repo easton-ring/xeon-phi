@@ -71,3 +71,42 @@ codes, not messages.
 
 **D-10 OFDM class included.** 8 classes: bpsk, qpsk, 8psk, 16qam, 64qam, 2fsk,
 4fsk, ofdm.
+
+**D-11 Cross-language tests use ctypes plus subprocess.** CMake also builds
+`libknc.so` from the same object files as the static library. pytest calls
+kernels and features through ctypes (`knc_rf_lab.cbin`) and calls the CLI
+tools (`knc_validate`, `knc_bench`, `knc_infer`) as subprocesses. `cbin`
+builds the tree on demand, so a plain `pytest` works.
+
+**D-12 `knc_bench` is self-describing.** Compiler, flags, git commit (baked in
+at configure time; `make` reconfigures every run), CPU model, hypervisor flag,
+OS and dataset SHA-256 (a C SHA-256 implementation) are written by the binary
+itself. Reason: on the card there is no Python to add metadata afterwards.
+
+**D-13 Features are computed in double from float32 input**, in both C and
+NumPy. Reason: cumulants involve cancellation; double makes 1e-9 agreement
+possible and keeps the classifier comparison about the model, not rounding.
+The DSP kernels have both precisions.
+
+**D-14 `-ffp-contract=off -fno-fast-math`** on the host build, and
+`-fp-model precise` in the KNC Makefiles (icc defaults to value-unsafe
+`fast=1`). Reason: NaN/Inf propagation tests and reproducible rounding.
+
+**D-15 TorchSig lives in a separate venv.** The CPU-only torch index is
+blocked, so the only installable torch pulls about 3 GB of CUDA wheels. The
+adapter is tested there (`docs/torchsig.md`) and skipped with a reason in the
+dev venv.
+
+**D-16 Fail-loud MIC guards are layered.** Native builds: compile-time
+`#error` without `__MIC__`, plus a runtime `uname -m` check. Offload: device
+count check, the `mandatory` clause on every pragma, and an in-region
+`__MIC__` probe that aborts if code ran on the host. Reason: the default
+offload mode differs between icc versions (`docs/mpss-compatibility.md`).
+
+**D-17 Periodic Hann window**, not `numpy.hanning` (symmetric), and the
+periodogram is normalized by Σw² (`docs/kernels.md`).
+
+**D-18 Example outputs committed in `results/examples/`**: compact benchmark
+JSON (~200 KB), plot, evaluation metrics, confusion matrices and run logs from
+the final validation run. Generated datasets and models are not committed.
+They regenerate in seconds and their identity is the SHA-256.

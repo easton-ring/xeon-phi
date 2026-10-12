@@ -1,0 +1,26 @@
+{
+  "train_sha256": "9d2c1ed85650ad781db0cd3bea532cc9e8bcbefe413d99734878474e2bf9e19d",
+  "val_sha256": "85abf3e2596dda68501e6f78f916eb89eb8b24042da84e2e7c784f5b733a6c72",
+  "classes": [
+    "bpsk",
+    "qpsk",
+    "8psk",
+    "16qam",
+    "64qam",
+    "2fsk",
+    "4fsk",
+    "ofdm"
+  ],
+  "models": {
+    "logreg": {
+      "val_accuracy": 0.675,
+      "fit_seconds": 0.03806055999984892,
+      "train_accuracy": 0.725625
+    },
+    "mlp": {
+      "val_accuracy": 0.6775,
+      "fit_seconds": 3.2813446459999795,
+      "train_accuracy": 0.91
+    }
+  }
+}
