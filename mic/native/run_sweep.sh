@@ -10,6 +10,8 @@
 #   KMP_PLACE_THREADS=<c>c,<t>t   restrict to c cores x t threads per core
 # Thread points: 1 2 4 8 16 30 60 120 240 (240 = 60 cores x 4 threads; one core
 # is often left to the card OS - compare 236 as well).
+# Runs over ssh on purpose: Intel's native-build article says micnativeloadex is
+# "not intended for use when measuring application performance".
 set -eu
 DATASET=${1:?usage: run_sweep.sh DATASET_BASENAME [CARD] [DIR]}
 CARD=${2:-mic0}

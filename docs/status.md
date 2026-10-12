@@ -154,7 +154,7 @@ is "verified on hardware" only with that evidence.
 11. [guest] `make -C mic/native`; save the build log. Run
     `build-mic/knc_bench --kernel magsq --synthetic` **on the guest** and
     confirm it fails loudly (it must not run).
-12. [guest→card] `MIC_LIBIOMP=<…/lib/mic/libiomp5.so> mic/native/deploy.sh
+12. [guest→card] `MIC_LIBDIR=<icc MIC runtime lib dir> mic/native/deploy.sh
     data/dev/test.kncds`. The card-side `knc_validate` must print `"status":
     "ok"` with the same SHA-256.
 13. [card] Smoke test: `ssh mic0 'cd /tmp/knc && LD_LIBRARY_PATH=. ./knc_bench

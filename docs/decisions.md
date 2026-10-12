@@ -123,3 +123,11 @@ EL7.3 lacks CMake ≥ 3.13 and Python ≥ 3.10, so the guest gets a plain-gcc
 **D-20 `CC` defaults in the MIC Makefiles.** GNU make predefines `CC=cc`, so
 `CC ?= icc` never applied (a silent non-icc build). The Makefiles now set the
 compiler only when `$(origin CC)` is `default`.
+
+**D-21 Native deployment copies the full Intel MIC runtime set.** Intel's
+native-build article (PRIMARY in `docs/mpss-compatibility.md`) lists
+`libiomp5.so libimf.so libsvml.so libintlc.so.5 libirng.so` as the typical C
+runtime dependencies of `icc -mmic` binaries. `deploy.sh` takes the directory
+(`MIC_LIBDIR`) instead of one `libiomp5.so` path, copies that set, and logs
+`micnativeloadex -l`. Benchmarks keep running over ssh, because the article
+says micnativeloadex is not meant for performance measurement.

@@ -6,10 +6,39 @@ one of these labels:
 - **SOURCED**: a historical source says so. The URL is given. The source was
   read as a search-engine excerpt, because this session's network blocked
   opening the pages directly; check the URL before relying on exact wording.
+- **PRIMARY**: read in full from an Intel document (text supplied by the
+  project owner from a Wayback Machine capture); see "Native build article".
 - **BELIEF**: widely repeated or follows from the sources, but has no direct quote.
 - **UNVERIFIED**: no source found yet; must be confirmed on the lab machines.
 
 Research notes behind this file were collected 2026-10-12.
+
+## Native build article (PRIMARY)
+
+Intel, A. K. Sharp, *Building a Native Application for Intel® Xeon Phi™
+Coprocessors*, published 2014-03-27, updated 2014-09-09.
+<https://software.intel.com/en-us/articles/building-a-native-application-for-intel-xeon-phi-coprocessors>
+(offline; the text was read from a Wayback Machine capture, 7 captures between
+2020-08-08 and 2021-06-19). It was written for **Composer XE 2013 SP1
+(icc 14.0)**, so paths below are 2013-era; differences for icc 17 are noted.
+What this project takes from it:
+
+| topic | what the article says | effect here |
+|-------|-----------------------|-------------|
+| compiler env | `source /opt/intel/composer_xe_2013_sp1/bin/compilervars.sh intel64`, check with `icc -V` | icc 17 installs under a different prefix (BELIEF: `/opt/intel/compilers_and_libraries_2017/linux/bin/compilervars.sh`); record `icc -V` in results |
+| native flag | Linux `-mmic`, Windows `/Qmic`; code "runs only on Intel Xeon Phi coprocessors" | `mic/native/Makefile` uses `-mmic` |
+| optimization | default is `-O2` when no `-On` is given | we pass `-O3` explicitly; the host build also uses `-O3` |
+| native libraries | build them with `-mmic` (`-fpic -shared` for .so, `xiar crs` for .a) | not needed: the Makefile compiles the C core sources straight into each tool |
+| runtime dependencies | must be copied to the card. Default dir `/opt/intel/composer_xe_2013_sp1.X.XXX/compiler/lib/mic/`. Typical C set: `libiomp5.so`, `libimf.so`, `libsvml.so`, `libintlc.so.5`, `libirng.so` (plus Fortran, Cilk and MPI libs if used). glibc libs are already on the card | **`deploy.sh` previously copied only `libiomp5.so`**; now copies the full set from `MIC_LIBDIR`. icc 2017 dir: `…/compiler/lib/intel64_lin_mic` (forum report, below) |
+| dependency listing | `SINK_LD_LIBRARY_PATH=<mic libdir> /opt/intel/mic/bin/micnativeloadex a.out -l`; prints "Binary was built for … Knights Corner" plus found and not-found deps | `deploy.sh` logs this to `build-mic/knc_bench.deps.txt` |
+| transfer | MPSS networking gives `mic0`, `mic1`, …; `ssh mic0 'mkdir /tmp/x'`, `scp a.out libiomp5.so mic0:/tmp/x`. Non-root ssh/scp needs superuser setup | matches `deploy.sh` |
+| card filesystem | local FS is a **RAM disk in GDDR5**: files there consume the memory the application needs. For large data, NFS-mount a host directory (host `/etc/exports` entry for the card's private IP, default range e.g. `172.31.1.1`; card `/etc/fstab` entry) | dev dataset is small (13 MB per split) and goes to `/tmp`; NFS is an operator step, not scripted (it edits host config) |
+| running manually | `ssh mic0`, `cd`, `chmod +x`, `export LD_LIBRARY_PATH=<dir>:$LD_LIBRARY_PATH`, `./a.out` | `run_sweep.sh` does this per run |
+| micnativeloadex | copies binary + deps, runs, redirects output; "**not intended for use when measuring application performance**" | benchmarks use ssh only; micnativeloadex just for smoke tests |
+| debugging | GDB for MIC; IDB deprecated in 2013 SP1 | not used |
+
+Not in the article (still covered by the rows below): `uname -m`, thread
+affinity, `-qopenmp` spelling, offload, MPSS versions.
 
 ## Toolchain
 
@@ -19,7 +48,7 @@ Research notes behind this file were collected 2026-10-12.
 | 18.0 rejects `-mmic` | SOURCED | forum report: <https://community.intel.com/t5/Software-Archive/Is-Intel-withdrawing-compiler-support-for-KNC/td-p/1166609> |
 | Last MKL with KNC | SOURCED (search summary only) | MKL 2017. The MKL 2018 release notes carry the same removal entry: <https://www.intel.com/content/www/us/en/developer/articles/release-notes/intel-math-kernel-library-release-notes-and-new-features.html> |
 | `-qopenmp` (not `-openmp`) | SOURCED | `-openmp` was deprecated in icc 15 (<https://cmake.org/pipermail/cmake-developers/2014-June/010753.html>) and rejected in 18.0.1 (<https://github.com/wrf-model/wrf/issues/694>). Our Makefiles use `-qopenmp`. |
-| `-mmic` for native; no flag for offload | SOURCED | Linux spelling is the hyphen form, e.g. `ifort -mmic -qopenmp program.f95`; Intel's "Building a Native Application for Intel Xeon Phi Coprocessors" article mixes Linux and Windows option styles (forum note: <https://community.intel.com/t5/Software-Archive/Binary-error-on-Xeon-Phi/m-p/1062807>). The article itself (<https://software.intel.com/en-us/articles/building-a-native-application-for-intel-xeon-phi-coprocessors>) could not be opened from the authoring environment. |
+| `-mmic` for native; no flag for offload | PRIMARY (`-mmic`), SOURCED (offload) | Linux spelling is the hyphen form, e.g. `ifort -mmic -qopenmp program.f95`; Intel's "Building a Native Application for Intel Xeon Phi Coprocessors" article mixes Linux and Windows option styles (forum note: <https://community.intel.com/t5/Software-Archive/Binary-error-on-Xeon-Phi/m-p/1062807>). The article itself (<https://software.intel.com/en-us/articles/building-a-native-application-for-intel-xeon-phi-coprocessors>) could not be opened from the authoring environment. |
 | native vs offload build flags | SOURCED | TACC/IXPUG lab: "to run natively on the MIC you must compile with -mmic. No options are required for offloading." <https://www.ixpug.org/docs/Offload_lab_2_instructions.pdf> |
 | `-q[no-]offload[=none\|mandatory\|optional]` | SOURCED | C++ 16.0 guide: <https://portal.nacad.ufrj.br/online/intel/compiler_c/common/core/GUID-2077C232-DB36-4D54-9429-57F4660AB4BB.htm> |
 | `-fp-model precise` with `-mmic` | UNVERIFIED | `-fp-model` is a general icc option; that it works with `-mmic` 17.0 is not confirmed. Needed for our NaN/Inf semantics (`docs/kernels.md`). |

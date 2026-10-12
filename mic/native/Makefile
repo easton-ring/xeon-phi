@@ -1,7 +1,9 @@
 # KNC native build of the portable C99 core and tools.         *** UNVERIFIED ***
 #
 # Run inside the MPSS guest with the Intel compiler environment loaded, e.g.
-#   source /opt/intel/compilers_and_libraries/linux/bin/compilervars.sh intel64   (path UNVERIFIED)
+#   source <icc install>/bin/compilervars.sh intel64     then check: icc -V
+#   (Composer XE 2013 SP1: /opt/intel/composer_xe_2013_sp1/bin/compilervars.sh per
+#    Intel's native-build article; the icc 17 prefix differs - UNVERIFIED)
 #   make -C mic/native
 #
 # Flags (see docs/mpss-compatibility.md for sources and verification status):
