@@ -1,0 +1,15 @@
+# Shifted-channel test set for generalization: same classes and SNR range as
+# dev.yaml, but different channel/pulse ranges and a different master seed.
+name: shifted
+generator: builtin
+master_seed: 777001
+samples_per_example: 1024
+classes: [bpsk, qpsk, 8psk, 16qam, 64qam, 2fsk, 4fsk, ofdm]
+examples_per_class: {train: 0, val: 0, test: 200}
+snr_db: [-10.0, 20.0]
+impairments:
+  freq_offset: [-0.03, 0.03]
+  fading: {none: 0.2, flat: 0.2, rayleigh: 0.6}
+  flat_gain_db: [-6.0, 6.0]
+linear: {sps: [2, 6], rrc_beta: [0.1, 0.7], span_symbols: 8}
+fsk: {sps: [4, 16], mod_index: [0.3, 1.2]}

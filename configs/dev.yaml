@@ -1,0 +1,18 @@
+# Development dataset: 8 classes x 200 examples per split, 1024 samples.
+name: dev
+generator: builtin
+master_seed: 20261012
+samples_per_example: 1024
+sample_rate_hz: 1.0e6
+classes: [bpsk, qpsk, 8psk, 16qam, 64qam, 2fsk, 4fsk, ofdm]
+examples_per_class: {train: 200, val: 200, test: 200}
+snr_db: [-10.0, 20.0]
+impairments:
+  freq_offset: [-0.01, 0.01]      # cycles/sample
+  phase_offset: [0.0, 6.283185307179586]
+  timing_offset: [0.0, 1.0]       # fraction of a sample (linear mods)
+  fading: {none: 0.5, flat: 0.25, rayleigh: 0.25}
+  flat_gain_db: [-3.0, 3.0]
+linear: {sps: [4, 8], rrc_beta: [0.2, 0.5], span_symbols: 8}
+fsk: {sps: [8], mod_index: [0.5, 1.0]}
+ofdm: {nfft: 64, cp_len: 16, active_subcarriers: 52, qam_orders: [4, 16]}
