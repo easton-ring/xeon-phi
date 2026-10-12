@@ -131,3 +131,11 @@ runtime dependencies of `icc -mmic` binaries. `deploy.sh` takes the directory
 (`MIC_LIBDIR`) instead of one `libiomp5.so` path, copies that set, and logs
 `micnativeloadex -l`. Benchmarks keep running over ssh, because the article
 says micnativeloadex is not meant for performance measurement.
+
+**D-22 No host-kernel driver port.** Community MPSS ports (Keijser for
+CentOS 7/8; an AlmaLinux 8.10 port; unconfirmed reports of 5.x-kernel ports)
+are recorded in `docs/mpss-compatibility.md` as fallbacks only. With VFIO
+passthrough the lab host kernel never loads the `mic` driver, so porting it
+to a 6.x kernel is not on the Milestone 2 path. The first fallback is a
+CentOS 7.9 guest with Keijser's patched 3.8.6 modules. KNL-stack ports
+(MPSS 4.x) are excluded: they do not drive the KNC 5110P.

@@ -110,10 +110,49 @@ affinity, `-qopenmp` spelling, offload, MPSS versions.
 | **[guest]** `micnativeloadex ./knc_bench -a "..."` with `SINK_LD_LIBRARY_PATH=<MIC lib dir>` | native run without ssh; micnativeloadex copies the binary **and its library dependencies** to the card, but not data files, and does not forward stdin | SOURCED: <https://community.intel.com/t5/Software-Archive/micnativeloadex-problem/m-p/1009684>, <https://www.linux.com/?p=487507> (stdin). Missing `libiomp5.so` on the card is the usual failure; the fix is `SINK_LD_LIBRARY_PATH` (or `LD_LIBRARY_PATH` with ssh) pointing at the **MIC** build of the compiler libraries (<https://csc.cnsi.ucsb.edu/docs/using-xeon-phi-coprocessor>). |
 | MIC library directory for **icc 2017** | `…/compiler/lib/intel64_lin_mic` (older Composer XE releases: `…/compiler/lib/mic`) | SOURCED: a user's fix with the 2017 compiler was pointing the path at `compiler/lib/intel64_lin_mic`: <https://community.intel.com/t5/Software-Archive/Binary-error-on-Xeon-Phi/m-p/1062819>. Confirm with `find /opt/intel -name libiomp5.so -path '*mic*'`. |
 
+## Community driver ports (fallbacks if the 7.3 guest fails)
+
+**Why the modern host kernel doesn't need MPSS here.** In this project's
+design the card is passed through with VFIO. The lab host's kernel (e.g. 6.x)
+only binds `vfio-pci` and never loads the MIC driver. MPSS runs in an EL7 guest
+on a kernel it supports. So porting the `mic` driver to a 6.x kernel is **not**
+on the Milestone 2 path. These ports matter only if the 7.3 guest fails (for
+example MPSS 3.8.6 not matching the guest kernel) and a newer guest kernel is
+needed.
+
+Statuses were checked 2026-10-12, using search excerpts only.
+
+| project | claim | status |
+|---------|-------|--------|
+| Jan Just Keijser (Nikhef), `jjkeijser/mpss` | Patched MPSS 3.8.6 `mpss-modules` for newer RHEL/CentOS kernels, with RPMs, SRPMs and build notes. KNC. | SOURCED: page "Intel Xeon Phi (KNC) MPSS software and kernel modules for CentOS 7&8" <https://www.nikhef.nl/~janjust/mpss>, <https://jjkeijser.github.io/mpss/>, <https://github.com/jjkeijser/mpss>. RPM posts for CentOS 7.5, 7.6 and 7.8: <https://community.intel.com/t5/Software-Archive/MPSS-3-8-6-modules-for-CentOS-7-8/m-p/1173726>. "Use at your own risk; tested on my CentOS 7.8 box." Coverage up to CentOS 8.5 (kernel 4.18) was claimed in an earlier summary but not confirmed by a quote. |
+| `ruribe17`: KNC 5110P drivers and utilities for AlmaLinux | Port based on MPSS 3.8.6 | SOURCED for **AlmaLinux 8.10** (needs Python 2 fixes in mpss-micmgmt/miccheck): <https://github.com/ruribe17/Xeon-Phi-5110P-KNC-Drivers-Utilities-for-AlmaLinux-8.1>. An **AlmaLinux 9 / kernel 5.14** variant (said to be updated Feb 2025) was claimed in an earlier summary; **not found** in search, so UNVERIFIED. |
+| `devcapcap/XeonPhi` | MPSS **4.4.1** modules on kernel 5.6-rc1 / Ubuntu 20.04, with freezes on some cards | **UNVERIFIED** (not found). Even if accurate, MPSS 4.x is the **KNL** (x200) stack; it does not drive a 5110P (KNC, x100). An Intel forum reply in the MPSS-modules threads says KNL PCIe cards need MPSS 4.4, which "is not publicly available" and would need porting to kernel 4.18+ (search excerpt; exact thread not pinned, see <https://community.intel.com/t5/Software-Archive/MPSS-3-8-6-modules-for-CentOS-7-8/m-p/1173726>). Not usable here (brief §1.1: KNC is not KNL). |
+| `subgeniuskitty`: writeup and module port based on MPSS 3.8.6 | | **UNVERIFIED** (not found in search). |
+| Gentoo ebuild (older) | `mic` module ported to Linux 3.17.8 with small edits | SOURCED: <https://community.intel.com/t5/Software-Archive/Xeon-Phi-and-Gentoo/m-p/1051377> |
+| xdsopl `mpss-modules` | a GitHub copy of the modules | SOURCED (exists): <https://github-redirect.dependabot.com/xdsopl/mpss-modules>; contents not reviewed |
+
+**Fallback plan if the CentOS 7.3 guest fails** (UNVERIFIED):
+
+1. Use a CentOS **7.9** guest (kernel 3.10.0-1160) with Keijser's patched
+   3.8.6 modules (his CentOS 7 RPM/SRPM). That keeps the MPSS 3.8.6
+   userspace and the EL7 toolchain, and only swaps the kernel modules.
+2. Change `mic/guest/centos73-mpss.ks` to point at the 7.9 vault tree, and run
+   `install-mpss-guest.sh` with
+   `EXPECT_KERNEL=3.10.0-1160.el7.x86_64` after installing the patched
+   `mpss-modules` RPM matching that kernel.
+3. Record which module build (URL plus SHA-256 of the RPM) was used in
+   `results/hw/<date>/diag/`. Results from it count as unofficial-driver
+   results.
+
+A forum reply on Keijser's RPMs blamed a card that "wouldn't be used" on the
+BIOS **"Above 4G decoding"** setting
+(<https://community.intel.com/t5/Software-Archive/MPSS-3-8-4-modules-for-CentOS-7-5/m-p/1151706>).
+This is a second anecdotal source for that firmware setting.
+
 ## Hardware
 
 | item | status | source |
 |------|--------|--------|
 | 5110P: 60 cores, 1.053 GHz, 8 GB GDDR5, 320 GB/s, 1.011 TFLOPS FP64, 225 W, **passively cooled** | SOURCED | Intel SKU page above; <https://techpowerup.com/cpu-specs/xeon-phi-5110p.c2029> |
 | BAR0: 64-bit prefetchable, 8 GB in a typical lspci; relocatable 256 MiB–32 GiB, set in flash | SOURCED | <https://community.intel.com/t5/Software-Archive/Intel-Xeon-Phi-5110P-device-is-not-online/td-p/1054907>, <https://community.intel.com/t5/Server-Products/Xeon-Phi-5110P-configuring-PCIe-MEMBAR0/m-p/1267603> |
-| Host firmware must enable above-4G decoding / 64-bit MMIO | BELIEF (anecdotal forum advice; no Intel document found) | see `docs/qemu-passthrough.md` |
+| Host firmware must enable above-4G decoding / 64-bit MMIO | BELIEF (two anecdotal forum reports, see "Community driver ports"; no Intel document found) | see `docs/qemu-passthrough.md` |

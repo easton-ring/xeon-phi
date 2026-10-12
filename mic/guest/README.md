@@ -60,7 +60,9 @@ devices, edits host boot configuration or flashes the card.
   the 3.8.6 tarball. The script stops if `mpss-daemon*.rpm` is missing or
   `modprobe mic` fails.
 - RHEL 7.3 vs 7.4 support for 3.8.6 is disputed between sources. This setup
-  uses 7.3.
+  uses 7.3. If 7.3 fails, the documented fallback is a CentOS 7.9 guest with
+  Jan Just Keijser's patched 3.8.6 modules (`docs/mpss-compatibility.md`,
+  "Community driver ports").
 - Whether MPSS can boot a KNC card **inside a KVM guest** at all is
   unconfirmed. No public report of it working was found.
 - The guest OS is end-of-life: keep it isolated (switch the domain to an
