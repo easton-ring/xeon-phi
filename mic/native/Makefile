@@ -6,7 +6,8 @@
 #
 # Flags (see docs/mpss-compatibility.md for sources and verification status):
 #   -mmic          generate code for the KNC coprocessor (k1om)
-#   -qopenmp       OpenMP (icc >= 15 spelling; older icc used -openmp)
+#   -qopenmp       OpenMP (icc >= 15 spelling; older icc used -openmp). Linux uses the
+#                  hyphen forms; Intel's native-build article mixes in Windows (/Qopenmp) spellings.
 #   -fp-model precise   disable value-unsafe FP optimizations (icc defaults to fast=1);
 #                       required for the NaN/Inf tests in docs/kernels.md
 #   -std=c99

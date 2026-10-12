@@ -98,7 +98,7 @@ val 0.68).
 - KNC code paths have never been compiled with icc or run. Several flags and
   pragmas are SOURCED only from search excerpts, and some are BELIEF or
   UNVERIFIED (`docs/mpss-compatibility.md`).
-- `knc_bench` mic-native assumes `uname -m` is `k1om` on the card (BELIEF).
+- `knc_bench` mic-native assumes `uname -m` is `k1om` on the card (inferred from forum-quoted `uname -a` output; not confirmed).
   If that is wrong, it fails loudly and the check must be fixed.
 - The offload program is a separate binary covering one kernel (magsq). Its
   metadata is less complete than `knc_bench`'s; `timestamp_utc` is empty and

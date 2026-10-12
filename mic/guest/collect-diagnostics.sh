@@ -28,4 +28,5 @@ run card-uname-m    ssh -o BatchMode=yes -o ConnectTimeout=10 mic0 uname -m
 run card-cpuinfo    ssh -o BatchMode=yes -o ConnectTimeout=10 mic0 'head -30 /proc/cpuinfo; grep -c ^processor /proc/cpuinfo'
 run card-meminfo    ssh -o BatchMode=yes -o ConnectTimeout=10 mic0 'head -5 /proc/meminfo'
 run icc-version     sh -c 'command -v icc && icc -V'
+run mic-libiomp     sh -c 'find /opt/intel -name libiomp5.so -path "*mic*" 2>/dev/null'
 echo "done; review the files before committing them"
