@@ -1,0 +1,122 @@
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
+cmake --build build -j 4
+gmake[1]: Entering directory '/home/user/xeon-phi/build'
+gmake[2]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[  3%] Building C object CMakeFiles/knc_obj.dir/csrc/src/sha256.c.o
+[  7%] Building C object CMakeFiles/knc_obj.dir/csrc/src/timing.c.o
+[ 10%] Building C object CMakeFiles/knc_obj.dir/csrc/src/crc32.c.o
+[ 14%] Building C object CMakeFiles/knc_obj.dir/csrc/src/kncds.c.o
+[ 17%] Building C object CMakeFiles/knc_obj.dir/csrc/src/kernels.c.o
+[ 21%] Building C object CMakeFiles/knc_obj.dir/csrc/src/fft.c.o
+[ 25%] Building C object CMakeFiles/knc_obj.dir/csrc/src/features.c.o
+[ 28%] Building C object CMakeFiles/knc_obj.dir/csrc/src/model.c.o
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 28%] Built target knc_obj
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 32%] Linking C static library libknc_core.a
+[ 35%] Linking C shared library libknc.so
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 35%] Built target knc_shared
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 35%] Built target knc_core
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 39%] Building C object CMakeFiles/test_hash.dir/csrc/tests/test_hash.c.o
+[ 42%] Building C object CMakeFiles/knc_bench.dir/csrc/tools/knc_bench.c.o
+[ 50%] Building C object CMakeFiles/knc_infer.dir/csrc/tools/knc_infer.c.o
+[ 50%] Building C object CMakeFiles/knc_validate.dir/csrc/tools/knc_validate.c.o
+[ 53%] Linking C executable test_hash
+[ 57%] Linking C executable knc_infer
+[ 60%] Linking C executable knc_validate
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 60%] Built target test_hash
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 64%] Building C object CMakeFiles/test_kncds.dir/csrc/tests/test_kncds.c.o
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 64%] Built target knc_validate
+[ 64%] Built target knc_infer
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 67%] Building C object CMakeFiles/test_kernels.dir/csrc/tests/test_kernels.c.o
+[ 71%] Building C object CMakeFiles/test_fft.dir/csrc/tests/test_fft.c.o
+[ 75%] Linking C executable test_kncds
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 75%] Built target test_kncds
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 78%] Building C object CMakeFiles/test_features.dir/csrc/tests/test_features.c.o
+[ 82%] Linking C executable test_fft
+[ 85%] Linking C executable test_features
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 85%] Built target test_fft
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 89%] Built target test_features
+[ 92%] Building C object CMakeFiles/test_model.dir/csrc/tests/test_model.c.o
+[ 92%] Linking C executable knc_bench
+[ 96%] Linking C executable test_kernels
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[100%] Linking C executable test_model
+[100%] Built target knc_bench
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[100%] Built target test_model
+[100%] Built target test_kernels
+gmake[2]: Leaving directory '/home/user/xeon-phi/build'
+gmake[1]: Leaving directory '/home/user/xeon-phi/build'
+cd build && ctest --output-on-failure
+Test project /home/user/xeon-phi/build
+    Start 1: test_hash
+1/6 Test #1: test_hash ........................   Passed    0.00 sec
+    Start 2: test_kncds
+2/6 Test #2: test_kncds .......................   Passed    0.01 sec
+    Start 3: test_kernels
+3/6 Test #3: test_kernels .....................   Passed    0.00 sec
+    Start 4: test_fft
+4/6 Test #4: test_fft .........................   Passed    1.52 sec
+    Start 5: test_features
+5/6 Test #5: test_features ....................   Passed    0.00 sec
+    Start 6: test_model
+6/6 Test #6: test_model .......................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   1.55 sec
+KNC_BUILD_DIR=/home/user/xeon-phi/build /tmp/claude-0/freshvenv/bin/python -m pytest -q -rs
+........................................................................ [ 68%]
+.................................                                        [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_torchsig.py:7: torchsig not installed (optional [torchsig] extra; CPU-only torch index is unreachable here, see docs/torchsig.md)
+105 passed, 1 skipped in 1.57s
+
+real	0m5.023s
+user	0m7.873s
+sys	0m0.925s

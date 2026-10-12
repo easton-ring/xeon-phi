@@ -1,1 +1,0 @@
-/usr/bin/cc -O3 -DNDEBUG CMakeFiles/test_hash.dir/csrc/tests/test_hash.c.o -o test_hash  libknc_core.a -lm 

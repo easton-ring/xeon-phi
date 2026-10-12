@@ -1,1 +1,0 @@
-/usr/bin/cc -O3 -DNDEBUG CMakeFiles/test_kncds.dir/csrc/tests/test_kncds.c.o -o test_kncds  libknc_core.a -lm 

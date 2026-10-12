@@ -1,1 +1,0 @@
-/usr/bin/cc -O3 -DNDEBUG CMakeFiles/test_kernels.dir/csrc/tests/test_kernels.c.o -o test_kernels  libknc_core.a -lm 
