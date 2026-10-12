@@ -56,6 +56,7 @@ build/knc_bench --kernel psd --dataset data/dev/test.kncds --batch 256 --threads
 - [Benchmark methodology and JSON schema](docs/benchmark-methodology.md)
 - [Architecture: host, MIC native, MIC offload](docs/architecture.md)
 - [MPSS 3.8 compatibility](docs/mpss-compatibility.md) · [QEMU/VFIO passthrough](docs/qemu-passthrough.md)
+- [Porting the KNC driver to a modern kernel (plan)](docs/kernel-port.md)
 - [TorchSig adapter](docs/torchsig.md) · [Decisions](docs/decisions.md) · [Status matrix and Milestone 2 checklist](docs/status.md)
 
 ## Honesty rules

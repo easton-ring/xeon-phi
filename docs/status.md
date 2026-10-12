@@ -43,6 +43,7 @@ commit `e4baf64`, fresh venv, `make clean` first.
 | `KNC_REQUIRE_MIC` guards (compile-time `__MIC__`, runtime `uname -m == k1om`) | compile-time guard verified here (fires with gcc); runtime check unverified | `gcc -DKNC_REQUIRE_MIC -fsyntax-only csrc/tools/knc_bench.c` → `#error` |
 | `mic/offload/offload_magsq.c` | **unverified** | C syntax only (`make -C mic/offload syntax-check`, gcc + stub header; offload pragmas not checked) |
 | MPSS / compiler / passthrough facts | **unverified** on hardware; SOURCED items have URLs | `docs/mpss-compatibility.md`, `docs/qemu-passthrough.md` |
+| Kernel driver port plan (`docs/kernel-port.md`), `mic/port/apiscan.sh`, `mic/port/ladder.sh` | plan **unverified**; scanner run here on the MPSS 3 (Keijser) and mainline v5.9 trees; ladder logic tested with stub commands only | `mic/port/apiscan.sh <tree>`; ladder: pass, kernel-BUG, error-bound and refusal paths exercised with stubbed `lspci`/`modprobe`/`micctrl`/`ssh` |
 | Any MIC measurement | **none exist** | benchmark files record `{"status": "unavailable", "execution_mode": "mic-native"/"mic-offload", ...}` |
 
 ## Commands (all confirmed working here)
