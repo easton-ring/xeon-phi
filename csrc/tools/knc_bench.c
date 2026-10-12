@@ -40,6 +40,11 @@
 #define KNC_EXEC_MODE "host"
 #endif
 
+/* A binary labeled mic-native must be a KNC (-mmic) build and must run on the card. */
+#if defined(KNC_REQUIRE_MIC) && !defined(__MIC__)
+#error "KNC_REQUIRE_MIC set but __MIC__ is not defined: this is not a -mmic build"
+#endif
+
 #define TWO_PI 6.283185307179586476925286766559
 #define NREF 4 /* examples checked against the double reference */
 
@@ -292,6 +297,15 @@ int main(int argc, char **argv)
     time_t now = time(NULL);
     FILE *fo = stdout;
 
+#ifdef KNC_REQUIRE_MIC
+    /* Fail loudly unless we are on the coprocessor (uname -m on the card is
+     * expected to be "k1om"; UNVERIFIED, see docs/mpss-compatibility.md). */
+    if (uname(&un) != 0 || strcmp(un.machine, "k1om") != 0) {
+        fprintf(stderr, "knc_bench: mic-native build is not running on a KNC coprocessor (uname -m = %s)\n",
+                un.machine);
+        return 3;
+    }
+#endif
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--kernel") && i + 1 < argc) o.kernel = argv[++i];
         else if (!strcmp(argv[i], "--dataset") && i + 1 < argc) o.dataset = argv[++i];

@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/knc_infer.dir/csrc/tools/knc_infer.c.o -o knc_infer  libknc_core.a -lm 

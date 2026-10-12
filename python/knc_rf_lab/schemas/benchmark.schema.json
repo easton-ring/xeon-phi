@@ -3,159 +3,468 @@
   "$id": "knc_rf_lab/benchmark.schema.json",
   "title": "knc-rf-lab benchmark results file, schema 1.0",
   "type": "object",
-  "required": ["schema_version", "created_utc", "host_context", "records"],
+  "required": [
+    "schema_version",
+    "created_utc",
+    "host_context",
+    "records"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schema_version": {"const": "1.0"},
-    "created_utc": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T"},
+    "schema_version": {
+      "const": "1.0"
+    },
+    "created_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T"
+    },
     "host_context": {
       "type": "object",
-      "required": ["note", "python", "lscpu", "git_commit"],
+      "required": [
+        "note",
+        "python",
+        "lscpu",
+        "git_commit"
+      ],
       "properties": {
-        "note": {"type": "string"},
-        "python": {"type": "string"},
-        "numpy": {"type": "string"},
-        "lscpu": {"type": "object"},
-        "git_commit": {"type": "string"}
+        "note": {
+          "type": "string"
+        },
+        "python": {
+          "type": "string"
+        },
+        "numpy": {
+          "type": "string"
+        },
+        "lscpu": {
+          "type": "object"
+        },
+        "git_commit": {
+          "type": "string"
+        }
       }
     },
-    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
   },
   "$defs": {
-    "num_or_null": {"type": ["number", "null"]},
+    "num_or_null": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
     "record": {
       "oneOf": [
-        {"$ref": "#/$defs/ok_record"},
-        {"$ref": "#/$defs/missing_record"}
+        {
+          "$ref": "#/$defs/ok_record"
+        },
+        {
+          "$ref": "#/$defs/missing_record"
+        }
       ]
     },
     "missing_record": {
       "type": "object",
-      "required": ["schema_version", "status", "reason"],
+      "required": [
+        "schema_version",
+        "status",
+        "reason"
+      ],
       "properties": {
-        "schema_version": {"const": "1.0"},
-        "status": {"enum": ["skipped", "unavailable"]},
-        "reason": {"type": "string"},
-        "execution_mode": {"enum": ["host", "mic-native", "mic-offload"]},
-        "kernel": {"type": "string"},
-        "threads": {"type": "integer", "minimum": 1}
+        "schema_version": {
+          "const": "1.0"
+        },
+        "status": {
+          "enum": [
+            "skipped",
+            "unavailable"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "execution_mode": {
+          "enum": [
+            "host",
+            "mic-native",
+            "mic-offload"
+          ]
+        },
+        "kernel": {
+          "type": "string"
+        },
+        "threads": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "ok_record": {
       "type": "object",
-      "required": ["schema_version", "status", "simulated", "execution_mode", "kernel", "precision",
-                   "batch", "samples_per_example", "threads", "warmup", "reps", "input", "timing",
-                   "throughput", "error", "metadata"],
+      "required": [
+        "schema_version",
+        "status",
+        "simulated",
+        "execution_mode",
+        "kernel",
+        "precision",
+        "batch",
+        "samples_per_example",
+        "threads",
+        "warmup",
+        "reps",
+        "input",
+        "timing",
+        "throughput",
+        "error",
+        "metadata"
+      ],
       "additionalProperties": false,
       "properties": {
-        "schema_version": {"const": "1.0"},
-        "status": {"const": "ok"},
-        "simulated": {"const": false},
-        "execution_mode": {"enum": ["host", "mic-native", "mic-offload"]},
-        "kernel": {"enum": ["cmul", "magsq", "meanpow", "psd", "fft", "xcorr", "cfo", "features"]},
-        "precision": {"enum": ["f32", "f64"]},
-        "batch": {"type": "integer", "minimum": 1},
-        "samples_per_example": {"type": "integer", "minimum": 2},
-        "threads": {"type": "integer", "minimum": 1},
-        "warmup": {"type": "integer", "minimum": 0},
-        "reps": {"type": "integer", "minimum": 1},
-        "xcorr_len": {"type": "integer", "minimum": 1},
+        "schema_version": {
+          "const": "1.0"
+        },
+        "status": {
+          "const": "ok"
+        },
+        "simulated": {
+          "const": false
+        },
+        "execution_mode": {
+          "enum": [
+            "host",
+            "mic-native",
+            "mic-offload"
+          ]
+        },
+        "kernel": {
+          "enum": [
+            "cmul",
+            "magsq",
+            "meanpow",
+            "psd",
+            "fft",
+            "xcorr",
+            "cfo",
+            "features"
+          ]
+        },
+        "precision": {
+          "enum": [
+            "f32",
+            "f64"
+          ]
+        },
+        "batch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "samples_per_example": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "threads": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "warmup": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "xcorr_len": {
+          "type": "integer",
+          "minimum": 1
+        },
         "input": {
           "type": "object",
-          "required": ["kind", "path", "sha256", "wrapped"],
+          "required": [
+            "kind",
+            "path",
+            "sha256",
+            "wrapped"
+          ],
           "additionalProperties": false,
           "properties": {
-            "kind": {"enum": ["dataset", "synthetic"]},
-            "path": {"type": ["string", "null"]},
-            "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-            "wrapped": {"type": "boolean"}
+            "kind": {
+              "enum": [
+                "dataset",
+                "synthetic"
+              ]
+            },
+            "path": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "wrapped": {
+              "type": "boolean"
+            }
           }
         },
         "timing": {
           "type": "object",
-          "required": ["unit", "init", "load", "transfer", "kernel", "post"],
+          "required": [
+            "unit",
+            "init",
+            "load",
+            "transfer",
+            "kernel",
+            "post"
+          ],
           "additionalProperties": false,
           "properties": {
-            "unit": {"const": "s"},
-            "init": {"type": "number", "minimum": 0},
-            "load": {"type": "number", "minimum": 0},
-            "transfer": {"$ref": "#/$defs/num_or_null"},
-            "post": {"type": "number", "minimum": 0},
+            "unit": {
+              "const": "s"
+            },
+            "init": {
+              "type": "number",
+              "minimum": 0
+            },
+            "load": {
+              "type": "number",
+              "minimum": 0
+            },
+            "transfer": {
+              "$ref": "#/$defs/num_or_null"
+            },
+            "post": {
+              "type": "number",
+              "minimum": 0
+            },
             "kernel": {
               "type": "object",
-              "required": ["median", "min", "max", "q25", "q75", "iqr", "samples"],
+              "required": [
+                "median",
+                "min",
+                "max",
+                "q25",
+                "q75",
+                "iqr",
+                "samples"
+              ],
               "additionalProperties": false,
               "properties": {
-                "median": {"type": "number", "minimum": 0},
-                "min": {"type": "number", "minimum": 0},
-                "max": {"type": "number", "minimum": 0},
-                "q25": {"type": "number", "minimum": 0},
-                "q75": {"type": "number", "minimum": 0},
-                "iqr": {"type": "number", "minimum": 0},
-                "samples": {"type": "array", "items": {"type": "number", "minimum": 0}}
+                "median": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "min": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "max": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "q25": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "q75": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "iqr": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "samples": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
               }
             }
           }
         },
         "throughput": {
           "type": "object",
-          "required": ["complex_samples_per_s", "examples_per_s"],
+          "required": [
+            "complex_samples_per_s",
+            "examples_per_s"
+          ],
           "additionalProperties": false,
           "properties": {
-            "complex_samples_per_s": {"$ref": "#/$defs/num_or_null"},
-            "examples_per_s": {"$ref": "#/$defs/num_or_null"}
+            "complex_samples_per_s": {
+              "$ref": "#/$defs/num_or_null"
+            },
+            "examples_per_s": {
+              "$ref": "#/$defs/num_or_null"
+            }
           }
         },
         "error": {
           "oneOf": [
             {
               "type": "object",
-              "required": ["reference", "examples_checked", "metric", "max_abs", "max_rel"],
+              "required": [
+                "reference",
+                "examples_checked",
+                "metric",
+                "max_abs",
+                "max_rel"
+              ],
               "additionalProperties": false,
               "properties": {
-                "reference": {"type": "string"},
-                "examples_checked": {"type": "integer", "minimum": 1},
-                "metric": {"type": "string"},
-                "max_abs": {"$ref": "#/$defs/num_or_null"},
-                "max_rel": {"$ref": "#/$defs/num_or_null"}
+                "reference": {
+                  "type": "string"
+                },
+                "examples_checked": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "metric": {
+                  "type": "string"
+                },
+                "max_abs": {
+                  "$ref": "#/$defs/num_or_null"
+                },
+                "max_rel": {
+                  "$ref": "#/$defs/num_or_null"
+                }
               }
             },
             {
               "type": "object",
-              "required": ["status", "reason"],
+              "required": [
+                "status",
+                "reason"
+              ],
               "additionalProperties": false,
-              "properties": {"status": {"const": "unavailable"}, "reason": {"type": "string"}}
+              "properties": {
+                "status": {
+                  "const": "unavailable"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
             }
           ]
         },
         "metadata": {
           "type": "object",
-          "required": ["timestamp_utc", "cpu_model", "cpu_hypervisor_flag", "online_cpus", "os",
-                       "compiler", "build_flags", "openmp", "git_commit"],
+          "required": [
+            "timestamp_utc",
+            "cpu_model",
+            "cpu_hypervisor_flag",
+            "online_cpus",
+            "os",
+            "compiler",
+            "build_flags",
+            "openmp",
+            "git_commit"
+          ],
           "additionalProperties": false,
           "properties": {
-            "timestamp_utc": {"type": "string"},
-            "cpu_model": {"type": "string"},
-            "cpu_hypervisor_flag": {"type": "boolean"},
-            "online_cpus": {"type": "integer", "minimum": 1},
+            "timestamp_utc": {
+              "type": "string"
+            },
+            "cpu_model": {
+              "type": "string"
+            },
+            "cpu_hypervisor_flag": {
+              "type": "boolean"
+            },
+            "online_cpus": {
+              "type": "integer",
+              "minimum": 1
+            },
             "os": {
               "type": "object",
-              "required": ["sysname", "release", "machine"],
-              "properties": {"sysname": {"type": "string"}, "release": {"type": "string"},
-                             "machine": {"type": "string"}}
-            },
-            "compiler": {"type": "string"},
-            "build_flags": {"type": "string"},
-            "openmp": {
-              "type": "object",
-              "required": ["version", "max_threads", "env"],
+              "required": [
+                "sysname",
+                "release",
+                "machine"
+              ],
               "properties": {
-                "version": {"type": ["integer", "null"]},
-                "max_threads": {"type": "integer", "minimum": 1},
-                "env": {"type": "object"}
+                "sysname": {
+                  "type": "string"
+                },
+                "release": {
+                  "type": "string"
+                },
+                "machine": {
+                  "type": "string"
+                }
               }
             },
-            "git_commit": {"type": "string"}
+            "compiler": {
+              "type": "string"
+            },
+            "build_flags": {
+              "type": "string"
+            },
+            "openmp": {
+              "type": "object",
+              "required": [
+                "version",
+                "max_threads",
+                "env"
+              ],
+              "properties": {
+                "version": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "max_threads": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "env": {
+                  "type": "object"
+                }
+              }
+            },
+            "git_commit": {
+              "type": "string"
+            }
+          }
+        },
+        "offload": {
+          "type": "object",
+          "required": [
+            "pattern",
+            "chunks",
+            "device"
+          ],
+          "properties": {
+            "pattern": {
+              "enum": [
+                "resident",
+                "per_call",
+                "chunked"
+              ]
+            },
+            "chunks": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "device": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         }
       }

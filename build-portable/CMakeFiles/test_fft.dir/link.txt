@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/test_fft.dir/csrc/tests/test_fft.c.o -o test_fft  libknc_core.a -lm 

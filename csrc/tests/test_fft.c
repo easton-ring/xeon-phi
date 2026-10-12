@@ -105,7 +105,7 @@ static void test_size(size_t n, int off)
             in[2 * i + 1] *= w;
         }
         dft(in, X, n);
-        CHECK(knc_psd_f32(&p, x, 1, KNC_WIN_HANN, work, P) == KNC_OK);
+        CHECK(knc_psd_f32(&p, x, 1, KNC_WIN_HANN, work, P) == (n > 1 ? KNC_OK : KNC_EINVAL));
         if (n > 1) {
             double e = 0, r = 0;
             for (k = 0; k < n; k++) {

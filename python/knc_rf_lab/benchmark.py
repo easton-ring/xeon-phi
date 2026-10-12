@@ -121,6 +121,24 @@ def sweep(dataset: Path | None, kernels, batches, threads, precisions, reps, war
     return doc
 
 
+def collect(jsonl: Path, note: str) -> dict:
+    """Wrap records produced elsewhere (e.g. on the card) into a validated results file.
+
+    The records are taken verbatim; host_context describes the machine running
+    this command (the MPSS guest), and ``note`` says where the records came from.
+    """
+    records = [json.loads(line) for line in jsonl.read_text().splitlines() if line.strip()]
+    doc = {
+        "schema_version": "1.0",
+        "created_utc": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "host_context": {"note": note, "python": platform.python_version(), "numpy": np.__version__,
+                         "lscpu": lscpu(), "git_commit": git_commit()},
+        "records": records,
+    }
+    validate(doc)
+    return doc
+
+
 def plot(doc: dict, out_png: Path) -> None:
     import matplotlib
 
@@ -169,10 +187,16 @@ def main(argv=None) -> int:
     ap.add_argument("--warmup", type=int, default=3)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--plot", action="store_true", help="also write <out>.png (needs matplotlib)")
+    ap.add_argument("--collect", type=Path, default=None,
+                    help="instead of running, wrap JSON-lines records (e.g. from mic/native/run_sweep.sh)")
+    ap.add_argument("--note", default="records collected from another machine; see each record's metadata")
     a = ap.parse_args(argv)
     threads = _csv_ints(a.threads) if a.threads else host_threads()
-    doc = sweep(a.dataset, a.kernels.split(","), _csv_ints(a.batches), threads,
-                a.precisions.split(","), a.reps, a.warmup, a.samples)
+    if a.collect:
+        doc = collect(a.collect, a.note)
+    else:
+        doc = sweep(a.dataset, a.kernels.split(","), _csv_ints(a.batches), threads,
+                    a.precisions.split(","), a.reps, a.warmup, a.samples)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(doc, indent=1) + "\n")
     print(f"wrote {a.out} ({sum(r['status'] == 'ok' for r in doc['records'])} measured, "

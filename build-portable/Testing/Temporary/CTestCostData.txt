@@ -1,0 +1,7 @@
+test_hash 1 0.0022577
+test_kncds 1 0.0106985
+test_kernels 1 0.00241242
+test_fft 1 1.35931
+test_features 1 0.00252242
+test_model 1 0.0028814
+---

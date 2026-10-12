@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/knc_bench.dir/csrc/tools/knc_bench.c.o -o knc_bench  libknc_core.a -lm 

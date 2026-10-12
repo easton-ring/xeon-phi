@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/knc_validate.dir/csrc/tools/knc_validate.c.o -o knc_validate  libknc_core.a -lm 

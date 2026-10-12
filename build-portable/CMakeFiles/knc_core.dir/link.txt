@@ -1,0 +1,2 @@
+/usr/bin/ar qc libknc_core.a CMakeFiles/knc_obj.dir/csrc/src/crc32.c.o CMakeFiles/knc_obj.dir/csrc/src/sha256.c.o CMakeFiles/knc_obj.dir/csrc/src/timing.c.o CMakeFiles/knc_obj.dir/csrc/src/kncds.c.o CMakeFiles/knc_obj.dir/csrc/src/kernels.c.o CMakeFiles/knc_obj.dir/csrc/src/fft.c.o CMakeFiles/knc_obj.dir/csrc/src/features.c.o CMakeFiles/knc_obj.dir/csrc/src/model.c.o
+/usr/bin/ranlib libknc_core.a

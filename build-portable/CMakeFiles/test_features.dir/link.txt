@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/test_features.dir/csrc/tests/test_features.c.o -o test_features  libknc_core.a -lm 

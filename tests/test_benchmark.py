@@ -74,3 +74,18 @@ def test_host_threads():
     assert host_threads(4) == [1, 2, 4]
     assert host_threads(6) == [1, 2, 4, 6]
     assert host_threads(1) == [1]
+
+
+def test_collect_jsonl(exe, tiny_dataset, tmp_path):
+    from knc_rf_lab.benchmark import collect
+
+    r = run_one(exe, "magsq", tiny_dataset / "train.kncds", 2, 1, "f32", reps=2, warmup=0)
+    miss = {"schema_version": "1.0", "status": "unavailable", "execution_mode": "mic-native",
+            "kernel": "fft", "threads": 240, "reason": "knc_bench failed on mic0 (exit 255)"}
+    p = tmp_path / "raw.jsonl"
+    p.write_text(json.dumps(r) + "\n" + json.dumps(miss) + "\n")
+    doc = collect(p, "test")
+    assert len(doc["records"]) == 2
+    p.write_text(json.dumps({**r, "simulated": True}) + "\n")
+    with pytest.raises(SchemaError):
+        collect(p, "test")

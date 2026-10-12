@@ -6,7 +6,7 @@ RESULTS ?= results
 MODELS ?= artifacts/models
 JOBS   ?= $(shell nproc 2>/dev/null || echo 2)
 
-.PHONY: all build test ctest pytest data validate bench train evaluate infer-check demo clean
+.PHONY: all build test ctest pytest data validate bench train evaluate infer-check demo portability clean
 
 all: build
 
@@ -56,5 +56,18 @@ demo: build
 	$(MAKE) --no-print-directory infer-check
 	@echo "demo complete: $(RESULTS)/bench-host.json, $(RESULTS)/eval/metrics.json, $(RESULTS)/eval/infer_check.json"
 
+# Strict C99 compile with every available C compiler (no OpenMP, -Werror), then a
+# full no-OpenMP, non-native CMake build + CTest: stands in for "old compiler"
+# portability until icc -mmic is available (docs/status.md).
+portability:
+	@for cc in gcc clang; do command -v $$cc >/dev/null || continue; \
+	  for f in csrc/src/*.c csrc/tools/*.c; do \
+	    $$cc -std=c99 -pedantic -Wall -Wextra -Werror -Wno-unknown-pragmas -O2 -Icsrc/include -c $$f -o /dev/null || exit 1; \
+	  done; echo "$$cc: strict C99 OK"; done
+	cmake -S . -B $(BUILD)-portable -DKNC_OPENMP=OFF -DKNC_NATIVE=OFF -DCMAKE_BUILD_TYPE=Release > /dev/null
+	cmake --build $(BUILD)-portable -j $(JOBS)
+	cd $(BUILD)-portable && ctest --output-on-failure
+	$(MAKE) -s -C mic/offload syntax-check && echo "mic/offload: C syntax OK (pragmas not checked)"
+
 clean:
-	rm -rf $(BUILD) $(DATA) $(RESULTS)/bench-host.* $(RESULTS)/eval artifacts
+	rm -rf $(BUILD)-portable $(BUILD) $(DATA) $(RESULTS)/bench-host.* $(RESULTS)/eval artifacts
