@@ -110,3 +110,16 @@ periodogram is normalized by Σw² (`docs/kernels.md`).
 JSON (~200 KB), plot, evaluation metrics, confusion matrices and run logs from
 the final validation run. Generated datasets and models are not committed.
 They regenerate in seconds and their identity is the SHA-256.
+
+**D-19 MPSS guest VM as files, not automation of the host.** `mic/guest/`
+contains a kickstart (CentOS 7.3.1611 from the vault, kernel locked at
+3.10.0-514), a libvirt domain with `hostdev managed='no'`, and guest-side
+scripts. `managed='no'` is deliberate: with `managed='yes'` libvirt would
+detach the card from its host driver and bind vfio-pci automatically, which
+the brief (§1.6) reserves for the operator. The install script never flashes.
+EL7.3 lacks CMake ≥ 3.13 and Python ≥ 3.10, so the guest gets a plain-gcc
+`make -C mic/guest check` instead of `make test`.
+
+**D-20 `CC` defaults in the MIC Makefiles.** GNU make predefines `CC=cc`, so
+`CC ?= icc` never applied (a silent non-icc build). The Makefiles now set the
+compiler only when `$(origin CC)` is `default`.

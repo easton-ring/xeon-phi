@@ -37,7 +37,9 @@ commit `e4baf64`, fresh venv, `make clean` first.
 | `make test` (CTest + pytest) | verified here | CTest 6/6; pytest 105 passed, 1 skipped; `results/examples/logs/make-test.log` |
 | TorchSig adapter (2.2.0) | verified here, **separate venv only** | `results/examples/torchsig_adapter_test.log`; skipped in the dev venv (reason printed by `pytest -rs`); see `docs/torchsig.md` |
 | `mic/native/Makefile` (icc `-mmic`) | **unverified** | only `make -n` dry run; no icc here |
-| `mic/native/deploy.sh`, `run_sweep.sh` | **unverified** | `sh -n` syntax check only |
+| `mic/native/deploy.sh`, `run_sweep.sh` | **unverified** | `sh -n` and `shellcheck -S warning` only |
+| MPSS guest VM files (`mic/guest/`: kickstart, libvirt XML, MPSS install and diagnostics scripts) | **unverified** | `ksvalidator -v RHEL7`, `xmllint`, `sh -n`, `shellcheck -S warning`. No VM was built: no KVM, card or vault.centos.org access here |
+| `make -C mic/guest check` (C tests via plain gcc Makefile) | verified here with gcc 13; **unverified** with EL7 gcc 4.8 | `make -C mic/guest check` → all 6 C tests ok |
 | `KNC_REQUIRE_MIC` guards (compile-time `__MIC__`, runtime `uname -m == k1om`) | compile-time guard verified here (fires with gcc); runtime check unverified | `gcc -DKNC_REQUIRE_MIC -fsyntax-only csrc/tools/knc_bench.c` → `#error` |
 | `mic/offload/offload_magsq.c` | **unverified** | C syntax only (`make -C mic/offload syntax-check`, gcc + stub header; offload pragmas not checked) |
 | MPSS / compiler / passthrough facts | **unverified** on hardware; SOURCED items have URLs | `docs/mpss-compatibility.md`, `docs/qemu-passthrough.md` |
@@ -124,16 +126,16 @@ is "verified on hardware" only with that evidence.
 2. [host] `intel_iommu=on iommu=pt`; save `dmesg | grep -e DMAR -e IOMMU`
    and the IOMMU group listing.
 3. [host] Operator binds 8086:2250 to vfio-pci; save `lspci -nnk -s <BDF>`.
-4. [host] Create a q35 guest with the hostdev, a large 64-bit MMIO window
-   and ≥ 8 GB RAM. Snapshot the empty guest disk.
+4. [host] Install the guest from `mic/guest/centos73-mpss.ks` and define it
+   from `mic/guest/knc-mpss-guest.xml` (`mic/guest/README.md`). Snapshot.
 
 **B. Guest and MPSS bring-up** (`docs/mpss-compatibility.md`)
 
-5. [guest] Install CentOS/RHEL 7.3 (kernel 3.10.0-514); lock the kernel.
-   Save `uname -a`, `cat /etc/redhat-release`.
-6. [guest] Install MPSS 3.8.6 per its readme; `service mpss start`. Save
-   `micinfo`, `micctrl -s`, `miccheck`. If the flash does not match, the
-   operator flashes per the readme. Snapshot.
+5. [guest] Confirm CentOS 7.3 / kernel 3.10.0-514 (`/root/ks-installed-versions.txt`).
+6. [guest] `MPSS_TAR=... mic/guest/install-mpss-guest.sh`: installs MPSS 3.8.6,
+   brings the card online and runs `collect-diagnostics.sh` (micinfo,
+   micctrl -s, miccheck). If the flash doesn't match, the operator flashes
+   per the readme and reruns. Snapshot.
 7. [guest] `ssh mic0 uname -a; cat /proc/cpuinfo | head -30` → save. Confirm
    `uname -m` (fix the `KNC_REQUIRE_MIC` check if it is not `k1om`).
 8. [guest] Install Intel C++ 17.0 (PSXE 2017); save `icc -V`. Re-check the
@@ -142,9 +144,10 @@ is "verified on hardware" only with that evidence.
 
 **C. Native build and run**
 
-9. [guest] `git clone` this repo at a tagged commit. `make test` (host-side
-   build in the guest, with gcc 4.8 from EL7: the "old gcc" portability check).
-   Save the logs.
+9. [guest] `git clone` this repo at a tagged commit. `make -C mic/guest check`
+   (C core and C tests with EL7's gcc 4.8: the "old gcc" portability check).
+   Save the log. `make test` itself runs on the lab host (EL7.3 lacks
+   CMake ≥ 3.13 and Python ≥ 3.10).
 10. [guest] Copy or generate the dev dataset. Verify that its SHA-256 matches
     the sidecar (`knc-rf-lab validate`), or regenerate it and record the new
     SHA-256.

@@ -22,6 +22,10 @@ behavior is UNVERIFIED.
 > Treat KNC-in-KVM as an experiment until `micctrl -s` says `online` and
 > `miccheck` passes.
 
+Ready-made (UNVERIFIED) files for sections 4–5: `mic/guest/` (kickstart,
+libvirt domain XML, guest-side MPSS install and diagnostics scripts). See
+`mic/guest/README.md`.
+
 ## 0. Physical prerequisites
 
 - **Cooling.** The 5110P is passively cooled (225 W TDP, SOURCED). It needs

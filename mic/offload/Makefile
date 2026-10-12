@@ -5,7 +5,10 @@
 #   make -C mic/offload           -> ../../build-mic/offload_magsq
 #   make -C mic/offload syntax-check   (gcc -fsyntax-only with a stub header; works anywhere,
 #                                       checks C syntax only, NOT the offload pragmas)
-CC       ?= icc
+# make predefines CC=cc, so `CC ?= ...` would never apply; override only the default.
+ifeq ($(origin CC),default)
+CC := icc
+endif
 FLAGS    ?= -qopenmp -O3 -std=c99 -fp-model precise
 ROOT     := ../..
 OUT      ?= $(ROOT)/build-mic

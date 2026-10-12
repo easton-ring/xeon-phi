@@ -1,0 +1,77 @@
+<!--
+  libvirt domain template for the MPSS guest (CentOS 7.3 + MPSS 3.8.6) with the
+  Xeon Phi 5110P passed through.                              *** UNVERIFIED ***
+  Never tested with a real card. See mic/guest/README.md and docs/qemu-passthrough.md.
+
+  Before use, the OPERATOR replaces every @PLACEHOLDER@:
+    @DISK_PATH@     qcow2 created by the operator (e.g. qemu-img create -f qcow2 ... 60G)
+    @PCI_DOMAIN@ @PCI_BUS@ @PCI_SLOT@ @PCI_FUNC@
+                    the card's address from `lspci -nn | grep 8086:2250` on the host,
+                    as hex with 0x prefix (e.g. bus 0x03, slot 0x00, function 0x0)
+
+  hostdev managed='no' on purpose: libvirt will NOT detach the card from its
+  host driver or bind it to vfio-pci. The operator does that, by hand, before
+  starting the domain (docs/qemu-passthrough.md section 3). With managed='no'
+  the domain fails to start if the card is not already on vfio-pci.
+
+  The 64-bit PCI hole is raised for the card's 8 GB prefetchable BAR0.
+  `q35-pcihost.pci-hole64-size` is a QEMU option documented for large-BAR GPUs;
+  it is UNVERIFIED for KNC.
+-->
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>knc-mpss</name>
+  <description>CentOS 7.3 + Intel MPSS 3.8.6 research appliance with Xeon Phi 5110P (knc-rf-lab). Isolated; EOL OS.</description>
+  <memory unit='GiB'>16</memory>
+  <currentMemory unit='GiB'>16</currentMemory>
+  <!-- Uncomment after allocating hugepages on the host, for steadier timings:
+  <memoryBacking><hugepages/></memoryBacking>
+  -->
+  <vcpu placement='static'>8</vcpu>
+  <os>
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode='host-passthrough' check='none'/>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='@DISK_PATH@'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <!-- NAT network for installation. After bring-up, consider switching to an
+         isolated network: the guest OS no longer receives security updates. -->
+    <interface type='network'>
+      <source network='default'/>
+      <model type='virtio'/>
+    </interface>
+    <!-- The Xeon Phi 5110P (8086:2250). -->
+    <hostdev mode='subsystem' type='pci' managed='no'>
+      <source>
+        <address domain='@PCI_DOMAIN@' bus='@PCI_BUS@' slot='@PCI_SLOT@' function='@PCI_FUNC@'/>
+      </source>
+    </hostdev>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <graphics type='vnc' listen='127.0.0.1'/>
+    <video>
+      <model type='vga'/>
+    </video>
+  </devices>
+  <qemu:commandline>
+    <qemu:arg value='-global'/>
+    <qemu:arg value='q35-pcihost.pci-hole64-size=64G'/>
+  </qemu:commandline>
+</domain>

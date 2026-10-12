@@ -15,7 +15,7 @@ what is verified and the evidence.
 |------|----------|
 | `python/knc_rf_lab/` | host-only Python: config, deterministic generator, dataset reader/writer, features (NumPy), benchmark orchestration, classifier training/evaluation/export, TorchSig adapter |
 | `csrc/` | portable C99 core with a plain C ABI: dataset reader, CRC-32, SHA-256, DSP kernels, radix-2 FFT, features, model inference; tools `knc_validate`, `knc_bench`, `knc_infer`; CTest tests |
-| `mic/` | KNC native and offload build files and run scripts (UNVERIFIED, not built by default) |
+| `mic/` | KNC native and offload build files and run scripts; `mic/guest/` MPSS guest VM kickstart, libvirt XML and install scripts (all UNVERIFIED, not built by default) |
 | `configs/` | dataset configs: `dev.yaml` (8 classes × 200/split × 1024 samples), `shifted.yaml` (generalization test), `tiny.yaml` (unit tests), `torchsig_tiny.yaml` |
 | `docs/` | format, kernels, features, benchmark methodology, architecture, MPSS / QEMU passthrough notes, decisions, status |
 | `tests/` | pytest, including cross-language C-vs-NumPy checks |

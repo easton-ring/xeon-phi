@@ -12,7 +12,10 @@
 #   -std=c99
 # The same sources build the host baseline with gcc (top-level CMakeLists.txt).
 
-CC        ?= icc
+# make predefines CC=cc, so `CC ?= ...` would never apply; override only the default.
+ifeq ($(origin CC),default)
+CC := icc
+endif
 MICFLAGS  ?= -mmic -qopenmp -O3 -std=c99 -fp-model precise
 ROOT      := ../..
 OUT       ?= $(ROOT)/build-mic
