@@ -1,0 +1,345 @@
+{
+  "classes": [
+    "bpsk",
+    "qpsk",
+    "8psk",
+    "16qam",
+    "64qam",
+    "2fsk",
+    "4fsk",
+    "ofdm"
+  ],
+  "features": [
+    "power_db",
+    "power_var_norm",
+    "amp_mean",
+    "amp_m4",
+    "sigma_aa",
+    "c20_abs",
+    "c40_abs",
+    "c41_abs",
+    "c42",
+    "m2_spec_peak",
+    "m4_spec_peak",
+    "dphi_std",
+    "dphi_kurt",
+    "spec_centroid",
+    "spec_spread",
+    "spec_kurt",
+    "spec_flatness"
+  ],
+  "results": {
+    "logreg": {
+      "test": {
+        "n": 1600,
+        "accuracy": 0.665625,
+        "per_class": {
+          "bpsk": {
+            "n": 200,
+            "accuracy": 0.89
+          },
+          "qpsk": {
+            "n": 200,
+            "accuracy": 0.57
+          },
+          "8psk": {
+            "n": 200,
+            "accuracy": 0.625
+          },
+          "16qam": {
+            "n": 200,
+            "accuracy": 0.355
+          },
+          "64qam": {
+            "n": 200,
+            "accuracy": 0.51
+          },
+          "2fsk": {
+            "n": 200,
+            "accuracy": 0.695
+          },
+          "4fsk": {
+            "n": 200,
+            "accuracy": 0.735
+          },
+          "ofdm": {
+            "n": 200,
+            "accuracy": 0.945
+          }
+        },
+        "per_snr": [
+          {
+            "snr_lo": -10,
+            "snr_hi": -5,
+            "n": 275,
+            "accuracy": 0.24363636363636362
+          },
+          {
+            "snr_lo": -5,
+            "snr_hi": 0,
+            "n": 295,
+            "accuracy": 0.4745762711864407
+          },
+          {
+            "snr_lo": 0,
+            "snr_hi": 5,
+            "n": 256,
+            "accuracy": 0.64453125
+          },
+          {
+            "snr_lo": 5,
+            "snr_hi": 10,
+            "n": 274,
+            "accuracy": 0.8832116788321168
+          },
+          {
+            "snr_lo": 10,
+            "snr_hi": 15,
+            "n": 241,
+            "accuracy": 0.8879668049792531
+          },
+          {
+            "snr_lo": 15,
+            "snr_hi": 20,
+            "n": 259,
+            "accuracy": 0.915057915057915
+          }
+        ],
+        "dataset_sha256": "bd43d3045a2308085d01a0365e727564bc0cce9c6e15c1967f3c9254d10bd653"
+      },
+      "shifted_test": {
+        "n": 1600,
+        "accuracy": 0.519375,
+        "per_class": {
+          "bpsk": {
+            "n": 200,
+            "accuracy": 0.79
+          },
+          "qpsk": {
+            "n": 200,
+            "accuracy": 0.555
+          },
+          "8psk": {
+            "n": 200,
+            "accuracy": 0.34
+          },
+          "16qam": {
+            "n": 200,
+            "accuracy": 0.185
+          },
+          "64qam": {
+            "n": 200,
+            "accuracy": 0.305
+          },
+          "2fsk": {
+            "n": 200,
+            "accuracy": 0.525
+          },
+          "4fsk": {
+            "n": 200,
+            "accuracy": 0.505
+          },
+          "ofdm": {
+            "n": 200,
+            "accuracy": 0.95
+          }
+        },
+        "per_snr": [
+          {
+            "snr_lo": -10,
+            "snr_hi": -5,
+            "n": 227,
+            "accuracy": 0.16740088105726872
+          },
+          {
+            "snr_lo": -5,
+            "snr_hi": 0,
+            "n": 253,
+            "accuracy": 0.3715415019762846
+          },
+          {
+            "snr_lo": 0,
+            "snr_hi": 5,
+            "n": 283,
+            "accuracy": 0.5017667844522968
+          },
+          {
+            "snr_lo": 5,
+            "snr_hi": 10,
+            "n": 278,
+            "accuracy": 0.6258992805755396
+          },
+          {
+            "snr_lo": 10,
+            "snr_hi": 15,
+            "n": 274,
+            "accuracy": 0.6605839416058394
+          },
+          {
+            "snr_lo": 15,
+            "snr_hi": 20,
+            "n": 285,
+            "accuracy": 0.7087719298245614
+          }
+        ],
+        "dataset_sha256": "2e84d939a6d887d134731d1316e7ef82d721538e138b60cd89953d579578e6fe"
+      }
+    },
+    "mlp": {
+      "test": {
+        "n": 1600,
+        "accuracy": 0.66625,
+        "per_class": {
+          "bpsk": {
+            "n": 200,
+            "accuracy": 0.87
+          },
+          "qpsk": {
+            "n": 200,
+            "accuracy": 0.61
+          },
+          "8psk": {
+            "n": 200,
+            "accuracy": 0.67
+          },
+          "16qam": {
+            "n": 200,
+            "accuracy": 0.405
+          },
+          "64qam": {
+            "n": 200,
+            "accuracy": 0.45
+          },
+          "2fsk": {
+            "n": 200,
+            "accuracy": 0.705
+          },
+          "4fsk": {
+            "n": 200,
+            "accuracy": 0.745
+          },
+          "ofdm": {
+            "n": 200,
+            "accuracy": 0.875
+          }
+        },
+        "per_snr": [
+          {
+            "snr_lo": -10,
+            "snr_hi": -5,
+            "n": 275,
+            "accuracy": 0.24727272727272728
+          },
+          {
+            "snr_lo": -5,
+            "snr_hi": 0,
+            "n": 295,
+            "accuracy": 0.4745762711864407
+          },
+          {
+            "snr_lo": 0,
+            "snr_hi": 5,
+            "n": 256,
+            "accuracy": 0.65625
+          },
+          {
+            "snr_lo": 5,
+            "snr_hi": 10,
+            "n": 274,
+            "accuracy": 0.8868613138686131
+          },
+          {
+            "snr_lo": 10,
+            "snr_hi": 15,
+            "n": 241,
+            "accuracy": 0.8672199170124482
+          },
+          {
+            "snr_lo": 15,
+            "snr_hi": 20,
+            "n": 259,
+            "accuracy": 0.918918918918919
+          }
+        ],
+        "dataset_sha256": "bd43d3045a2308085d01a0365e727564bc0cce9c6e15c1967f3c9254d10bd653"
+      },
+      "shifted_test": {
+        "n": 1600,
+        "accuracy": 0.51125,
+        "per_class": {
+          "bpsk": {
+            "n": 200,
+            "accuracy": 0.8
+          },
+          "qpsk": {
+            "n": 200,
+            "accuracy": 0.58
+          },
+          "8psk": {
+            "n": 200,
+            "accuracy": 0.35
+          },
+          "16qam": {
+            "n": 200,
+            "accuracy": 0.275
+          },
+          "64qam": {
+            "n": 200,
+            "accuracy": 0.26
+          },
+          "2fsk": {
+            "n": 200,
+            "accuracy": 0.53
+          },
+          "4fsk": {
+            "n": 200,
+            "accuracy": 0.495
+          },
+          "ofdm": {
+            "n": 200,
+            "accuracy": 0.8
+          }
+        },
+        "per_snr": [
+          {
+            "snr_lo": -10,
+            "snr_hi": -5,
+            "n": 227,
+            "accuracy": 0.20704845814977973
+          },
+          {
+            "snr_lo": -5,
+            "snr_hi": 0,
+            "n": 253,
+            "accuracy": 0.3715415019762846
+          },
+          {
+            "snr_lo": 0,
+            "snr_hi": 5,
+            "n": 283,
+            "accuracy": 0.5053003533568905
+          },
+          {
+            "snr_lo": 5,
+            "snr_hi": 10,
+            "n": 278,
+            "accuracy": 0.6079136690647482
+          },
+          {
+            "snr_lo": 10,
+            "snr_hi": 15,
+            "n": 274,
+            "accuracy": 0.635036496350365
+          },
+          {
+            "snr_lo": 15,
+            "snr_hi": 20,
+            "n": 285,
+            "accuracy": 0.6701754385964912
+          }
+        ],
+        "dataset_sha256": "2e84d939a6d887d134731d1316e7ef82d721538e138b60cd89953d579578e6fe"
+      }
+    }
+  }
+}

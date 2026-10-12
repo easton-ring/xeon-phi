@@ -1,0 +1,267 @@
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
+cmake --build build -j 4
+gmake[1]: Entering directory '/home/user/xeon-phi/build'
+gmake[2]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 28%] Built target knc_obj
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 35%] Built target knc_shared
+[ 35%] Built target knc_core
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 42%] Built target knc_bench
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 50%] Built target knc_validate
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 57%] Built target knc_infer
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+[ 64%] Built target test_hash
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 71%] Built target test_kncds
+gmake[3]: Entering directory '/home/user/xeon-phi/build'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 78%] Built target test_kernels
+[ 85%] Built target test_fft
+gmake[3]: Leaving directory '/home/user/xeon-phi/build'
+[ 92%] Built target test_features
+[100%] Built target test_model
+gmake[2]: Leaving directory '/home/user/xeon-phi/build'
+gmake[1]: Leaving directory '/home/user/xeon-phi/build'
+make --no-print-directory data
+/tmp/claude-0/freshvenv/bin/python -m knc_rf_lab generate --config configs/dev.yaml --out data/dev
+train: 1600 examples x 1024 samples  sha256=9d2c1ed85650ad78...
+  val: 1600 examples x 1024 samples  sha256=85abf3e2596dda68...
+ test: 1600 examples x 1024 samples  sha256=bd43d3045a230808...
+generated in 1.65 s -> data/dev
+/tmp/claude-0/freshvenv/bin/python -m knc_rf_lab generate --config configs/shifted.yaml --out data/shifted
+ test: 1600 examples x 1024 samples  sha256=2e84d939a6d887d1...
+generated in 0.56 s -> data/shifted
+make --no-print-directory validate
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
+cmake --build build -j 4
+[ 28%] Built target knc_obj
+[ 32%] Built target knc_shared
+[ 35%] Built target knc_core
+[ 42%] Built target knc_infer
+[ 50%] Built target test_hash
+[ 57%] Built target knc_bench
+[ 64%] Built target knc_validate
+[ 75%] Built target test_kncds
+[ 78%] Built target test_kernels
+[ 92%] Built target test_features
+[ 92%] Built target test_fft
+[100%] Built target test_model
+/tmp/claude-0/freshvenv/bin/python -m knc_rf_lab validate data/dev/*.kncds data/shifted/*.kncds
+{"file": "data/dev/test.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "bd43d3045a2308085d01a0365e727564bc0cce9c6e15c1967f3c9254d10bd653"}
+{"file": "data/dev/train.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "9d2c1ed85650ad781db0cd3bea532cc9e8bcbefe413d99734878474e2bf9e19d"}
+{"file": "data/dev/val.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "85abf3e2596dda68501e6f78f916eb89eb8b24042da84e2e7c784f5b733a6c72"}
+{"file": "data/shifted/test.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "2e84d939a6d887d134731d1316e7ef82d721538e138b60cd89953d579578e6fe"}
+build/knc_validate data/dev/*.kncds data/shifted/*.kncds
+{"file": "data/dev/test.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "bd43d3045a2308085d01a0365e727564bc0cce9c6e15c1967f3c9254d10bd653"}
+{"file": "data/dev/train.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "9d2c1ed85650ad781db0cd3bea532cc9e8bcbefe413d99734878474e2bf9e19d"}
+{"file": "data/dev/val.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "85abf3e2596dda68501e6f78f916eb89eb8b24042da84e2e7c784f5b733a6c72"}
+{"file": "data/shifted/test.kncds", "status": "ok", "num_examples": 1600, "samples_per_example": 1024, "num_classes": 8, "sha256": "2e84d939a6d887d134731d1316e7ef82d721538e138b60cd89953d579578e6fe"}
+make --no-print-directory bench
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
+cmake --build build -j 4
+[ 28%] Built target knc_obj
+[ 32%] Built target knc_core
+[ 35%] Built target knc_shared
+[ 42%] Built target knc_infer
+[ 50%] Built target knc_bench
+[ 57%] Built target knc_validate
+[ 64%] Built target test_hash
+[ 71%] Built target test_kernels
+[ 78%] Built target test_kncds
+[ 85%] Built target test_fft
+[ 92%] Built target test_features
+[100%] Built target test_model
+KNC_BUILD_DIR=/home/user/xeon-phi/build /tmp/claude-0/freshvenv/bin/python -m knc_rf_lab.benchmark --dataset data/dev/test.kncds \
+    --batches 1,64,1024 --reps 10 --out results/bench-host.json --plot
+cmul     f32 B=    1 T=  1  median=   0.0007 ms      1513.7 MS/s
+cmul     f32 B=    1 T=  2  median=   0.0005 ms      2056.2 MS/s
+cmul     f32 B=    1 T=  4  median=   0.0005 ms      2046.0 MS/s
+cmul     f32 B=   64 T=  1  median=   0.0231 ms      2833.1 MS/s
+cmul     f32 B=   64 T=  2  median=   0.0296 ms      2212.2 MS/s
+cmul     f32 B=   64 T=  4  median=   0.0238 ms      2751.8 MS/s
+cmul     f32 B= 1024 T=  1  median=   1.0897 ms       962.2 MS/s
+cmul     f32 B= 1024 T=  2  median=   0.5380 ms      1949.0 MS/s
+cmul     f32 B= 1024 T=  4  median=   0.2848 ms      3681.5 MS/s
+cmul     f64 B=    1 T=  1  median=   0.0006 ms      1655.6 MS/s
+cmul     f64 B=    1 T=  2  median=   0.0007 ms      1494.9 MS/s
+cmul     f64 B=    1 T=  4  median=   0.0008 ms      1312.8 MS/s
+cmul     f64 B=   64 T=  1  median=   0.1054 ms       621.7 MS/s
+cmul     f64 B=   64 T=  2  median=   0.1136 ms       577.1 MS/s
+cmul     f64 B=   64 T=  4  median=   0.1230 ms       532.7 MS/s
+cmul     f64 B= 1024 T=  1  median=   1.9880 ms       527.4 MS/s
+cmul     f64 B= 1024 T=  2  median=   1.1023 ms       951.2 MS/s
+cmul     f64 B= 1024 T=  4  median=   0.9847 ms      1064.8 MS/s
+magsq    f32 B=    1 T=  1  median=   0.0004 ms      2840.5 MS/s
+magsq    f32 B=    1 T=  2  median=   0.0003 ms      2955.3 MS/s
+magsq    f32 B=    1 T=  4  median=   0.0004 ms      2794.0 MS/s
+magsq    f32 B=   64 T=  1  median=   0.0085 ms      7720.1 MS/s
+magsq    f32 B=   64 T=  2  median=   0.0085 ms      7690.7 MS/s
+magsq    f32 B=   64 T=  4  median=   0.0085 ms      7709.7 MS/s
+magsq    f32 B= 1024 T=  1  median=   0.5705 ms      1838.0 MS/s
+magsq    f32 B= 1024 T=  2  median=   0.2642 ms      3969.3 MS/s
+magsq    f32 B= 1024 T=  4  median=   0.1350 ms      7768.9 MS/s
+magsq    f64 B=    1 T=  1  median=   0.0006 ms      1712.4 MS/s
+magsq    f64 B=    1 T=  2  median=   0.0005 ms      1882.4 MS/s
+magsq    f64 B=    1 T=  4  median=   0.0007 ms      1512.6 MS/s
+magsq    f64 B=   64 T=  1  median=   0.0229 ms      2857.4 MS/s
+magsq    f64 B=   64 T=  2  median=   0.0234 ms      2806.1 MS/s
+magsq    f64 B=   64 T=  4  median=   0.0301 ms      2179.3 MS/s
+magsq    f64 B= 1024 T=  1  median=   1.0574 ms       991.7 MS/s
+magsq    f64 B= 1024 T=  2  median=   0.6031 ms      1738.6 MS/s
+magsq    f64 B= 1024 T=  4  median=   0.2790 ms      3758.1 MS/s
+meanpow  f32 B=    1 T=  1  median=   0.0014 ms       752.9 MS/s
+meanpow  f32 B=    1 T=  2  median=   0.0023 ms       437.0 MS/s
+meanpow  f32 B=    1 T=  4  median=   0.0029 ms       355.9 MS/s
+meanpow  f32 B=   64 T=  1  median=   0.0716 ms       915.6 MS/s
+meanpow  f32 B=   64 T=  2  median=   0.0398 ms      1647.1 MS/s
+meanpow  f32 B=   64 T=  4  median=   0.0217 ms      3023.7 MS/s
+meanpow  f32 B= 1024 T=  1  median=   1.3412 ms       781.8 MS/s
+meanpow  f32 B= 1024 T=  2  median=   0.7767 ms      1350.1 MS/s
+meanpow  f32 B= 1024 T=  4  median=   0.3942 ms      2660.0 MS/s
+meanpow  f64 B=    1 T=  1  median=   0.0016 ms       648.7 MS/s
+meanpow  f64 B=    1 T=  2  median=   0.0025 ms       412.6 MS/s
+meanpow  f64 B=    1 T=  4  median=   0.0029 ms       349.3 MS/s
+meanpow  f64 B=   64 T=  1  median=   0.0605 ms      1084.0 MS/s
+meanpow  f64 B=   64 T=  2  median=   0.0396 ms      1656.1 MS/s
+meanpow  f64 B=   64 T=  4  median=   0.0253 ms      2588.6 MS/s
+meanpow  f64 B= 1024 T=  1  median=   1.3497 ms       776.9 MS/s
+meanpow  f64 B= 1024 T=  2  median=   0.8070 ms      1299.4 MS/s
+meanpow  f64 B= 1024 T=  4  median=   0.3821 ms      2744.1 MS/s
+psd      f32 B=    1 T=  1  median=   0.0058 ms       177.5 MS/s
+psd      f32 B=    1 T=  2  median=   0.0061 ms       167.6 MS/s
+psd      f32 B=    1 T=  4  median=   0.0055 ms       186.0 MS/s
+psd      f32 B=   64 T=  1  median=   0.3504 ms       187.1 MS/s
+psd      f32 B=   64 T=  2  median=   0.1827 ms       358.7 MS/s
+psd      f32 B=   64 T=  4  median=   0.1033 ms       634.1 MS/s
+psd      f32 B= 1024 T=  1  median=   6.3884 ms       164.1 MS/s
+psd      f32 B= 1024 T=  2  median=   3.2435 ms       323.3 MS/s
+psd      f32 B= 1024 T=  4  median=   2.3672 ms       443.0 MS/s
+psd      f64 B=    1 T=  1  median=   0.0067 ms       152.5 MS/s
+psd      f64 B=    1 T=  2  median=   0.0135 ms        76.1 MS/s
+psd      f64 B=    1 T=  4  median=   0.0097 ms       105.1 MS/s
+psd      f64 B=   64 T=  1  median=   0.5414 ms       121.0 MS/s
+psd      f64 B=   64 T=  2  median=   0.2537 ms       258.3 MS/s
+psd      f64 B=   64 T=  4  median=   0.1707 ms       383.8 MS/s
+psd      f64 B= 1024 T=  1  median=  11.9763 ms        87.6 MS/s
+psd      f64 B= 1024 T=  2  median=   5.5252 ms       189.8 MS/s
+psd      f64 B= 1024 T=  4  median=   3.1445 ms       333.5 MS/s
+fft      f32 B=    1 T=  1  median=   0.0049 ms       208.8 MS/s
+fft      f32 B=    1 T=  2  median=   0.0060 ms       169.9 MS/s
+fft      f32 B=    1 T=  4  median=   0.0068 ms       151.6 MS/s
+fft      f32 B=   64 T=  1  median=   0.4536 ms       144.5 MS/s
+fft      f32 B=   64 T=  2  median=   0.2966 ms       221.0 MS/s
+fft      f32 B=   64 T=  4  median=   0.1241 ms       528.0 MS/s
+fft      f32 B= 1024 T=  1  median=   6.4554 ms       162.4 MS/s
+fft      f32 B= 1024 T=  2  median=   3.9908 ms       262.7 MS/s
+fft      f32 B= 1024 T=  4  median=   1.7570 ms       596.8 MS/s
+fft      f64 B=    1 T=  1  median=   0.0105 ms        97.7 MS/s
+fft      f64 B=    1 T=  2  median=   0.0086 ms       118.5 MS/s
+fft      f64 B=    1 T=  4  median=   0.0084 ms       122.2 MS/s
+fft      f64 B=   64 T=  1  median=   0.4880 ms       134.3 MS/s
+fft      f64 B=   64 T=  2  median=   0.2552 ms       256.8 MS/s
+fft      f64 B=   64 T=  4  median=   0.1432 ms       457.7 MS/s
+fft      f64 B= 1024 T=  1  median=   6.7124 ms       156.2 MS/s
+fft      f64 B= 1024 T=  2  median=   4.1530 ms       252.5 MS/s
+fft      f64 B= 1024 T=  4  median=   3.1247 ms       335.6 MS/s
+xcorr    f32 B=    1 T=  1  median=   0.0353 ms        29.0 MS/s
+xcorr    f32 B=    1 T=  2  median=   0.0447 ms        22.9 MS/s
+xcorr    f32 B=    1 T=  4  median=   0.0331 ms        31.0 MS/s
+xcorr    f32 B=   64 T=  1  median=   2.0510 ms        32.0 MS/s
+xcorr    f32 B=   64 T=  2  median=   1.1961 ms        54.8 MS/s
+xcorr    f32 B=   64 T=  4  median=   0.7117 ms        92.1 MS/s
+xcorr    f32 B= 1024 T=  1  median=  39.8566 ms        26.3 MS/s
+xcorr    f32 B= 1024 T=  2  median=  26.6552 ms        39.3 MS/s
+xcorr    f32 B= 1024 T=  4  median=   9.2871 ms       112.9 MS/s
+xcorr    f64 B=    1 T=  1  median=   0.0565 ms        18.1 MS/s
+xcorr    f64 B=    1 T=  2  median=   0.0420 ms        24.4 MS/s
+xcorr    f64 B=    1 T=  4  median=   0.0562 ms        18.2 MS/s
+xcorr    f64 B=   64 T=  1  median=   3.4762 ms        18.9 MS/s
+xcorr    f64 B=   64 T=  2  median=   1.7930 ms        36.6 MS/s
+xcorr    f64 B=   64 T=  4  median=   1.6994 ms        38.6 MS/s
+xcorr    f64 B= 1024 T=  1  median=  45.1578 ms        23.2 MS/s
+xcorr    f64 B= 1024 T=  2  median=  33.9915 ms        30.8 MS/s
+xcorr    f64 B= 1024 T=  4  median=  17.4117 ms        60.2 MS/s
+cfo      f32 B=    1 T=  1  median=   0.0016 ms       659.4 MS/s
+cfo      f32 B=    1 T=  2  median=   0.0022 ms       467.7 MS/s
+cfo      f32 B=    1 T=  4  median=   0.0019 ms       543.8 MS/s
+cfo      f32 B=   64 T=  1  median=   0.0409 ms      1603.7 MS/s
+cfo      f32 B=   64 T=  2  median=   0.0305 ms      2148.9 MS/s
+cfo      f32 B=   64 T=  4  median=   0.0165 ms      3981.0 MS/s
+cfo      f32 B= 1024 T=  1  median=   1.2669 ms       827.7 MS/s
+cfo      f32 B= 1024 T=  2  median=   0.6574 ms      1595.1 MS/s
+cfo      f32 B= 1024 T=  4  median=   0.3862 ms      2715.4 MS/s
+cfo      f64 B=    1 T=  1  median=   0.0017 ms       603.6 MS/s
+cfo      f64 B=    1 T=  2  median=   0.0017 ms       595.5 MS/s
+cfo      f64 B=    1 T=  4  median=   0.0024 ms       425.5 MS/s
+cfo      f64 B=   64 T=  1  median=   0.0608 ms      1077.4 MS/s
+cfo      f64 B=   64 T=  2  median=   0.0253 ms      2595.0 MS/s
+cfo      f64 B=   64 T=  4  median=   0.0179 ms      3653.1 MS/s
+cfo      f64 B= 1024 T=  1  median=   1.2733 ms       823.5 MS/s
+cfo      f64 B= 1024 T=  2  median=   0.8106 ms      1293.6 MS/s
+cfo      f64 B= 1024 T=  4  median=   0.3908 ms      2682.9 MS/s
+features f32 B=    1 T=  1  median=   0.1496 ms         6.8 MS/s
+features f32 B=    1 T=  2  median=   0.1568 ms         6.5 MS/s
+features f32 B=    1 T=  4  median=   0.1390 ms         7.4 MS/s
+features f32 B=   64 T=  1  median=   5.0742 ms        12.9 MS/s
+features f32 B=   64 T=  2  median=   3.6045 ms        18.2 MS/s
+features f32 B=   64 T=  4  median=   1.6032 ms        40.9 MS/s
+features f32 B= 1024 T=  1  median=  69.0251 ms        15.2 MS/s
+features f32 B= 1024 T=  2  median=  41.3827 ms        25.3 MS/s
+features f32 B= 1024 T=  4  median=  29.8676 ms        35.1 MS/s
+wrote results/bench-host.json (135 measured, 6 skipped/unavailable records); schema valid
+wrote results/bench-host.png
+make --no-print-directory train
+/tmp/claude-0/freshvenv/bin/python -m knc_rf_lab.classify train --data data/dev --out artifacts/models
+logreg  train=0.726 val=0.675 (0.0s)
+mlp     train=0.910 val=0.677 (3.3s)
+make --no-print-directory evaluate
+/tmp/claude-0/freshvenv/bin/python -m knc_rf_lab.classify evaluate --data data/dev --models artifacts/models \
+    --shifted data/shifted/test.kncds --out results/eval
+logreg  test          acc=0.666  per-SNR: -10:0.24 -5:0.47 +0:0.64 +5:0.88 +10:0.89 +15:0.92
+logreg  shifted_test  acc=0.519  per-SNR: -10:0.17 -5:0.37 +0:0.50 +5:0.63 +10:0.66 +15:0.71
+mlp     test          acc=0.666  per-SNR: -10:0.25 -5:0.47 +0:0.66 +5:0.89 +10:0.87 +15:0.92
+mlp     shifted_test  acc=0.511  per-SNR: -10:0.21 -5:0.37 +0:0.51 +5:0.61 +10:0.64 +15:0.67
+make --no-print-directory infer-check
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
+cmake --build build -j 4
+[ 28%] Built target knc_obj
+[ 32%] Built target knc_core
+[ 35%] Built target knc_shared
+[ 42%] Built target knc_bench
+[ 50%] Built target knc_validate
+[ 57%] Built target knc_infer
+[ 64%] Built target test_hash
+[ 71%] Built target test_kncds
+[ 78%] Built target test_features
+[ 85%] Built target test_kernels
+[ 92%] Built target test_fft
+[100%] Built target test_model
+KNC_BUILD_DIR=/home/user/xeon-phi/build /tmp/claude-0/freshvenv/bin/python -m knc_rf_lab.classify infer_check --data data/dev \
+    --models artifacts/models --out results/eval
+knc_infer: 1600 examples, accuracy 0.6656
+logreg  C vs sklearn: 0 mismatches of 1600 (unexplained: 0), max |logit diff| = 2.64e-13
+knc_infer: 1600 examples, accuracy 0.6663
+mlp     C vs sklearn: 0 mismatches of 1600 (unexplained: 0), max |logit diff| = 1.76e-12
+demo complete: results/bench-host.json, results/eval/metrics.json, results/eval/infer_check.json
+
+real	0m35.062s
+user	0m43.025s
+sys	0m3.091s

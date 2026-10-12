@@ -1,0 +1,120 @@
+gcc: strict C99 OK
+clang: strict C99 OK
+cmake -S . -B build-portable -DKNC_OPENMP=OFF -DKNC_NATIVE=OFF -DCMAKE_BUILD_TYPE=Release > /dev/null
+cmake --build build-portable -j 4
+gmake[1]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[2]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[  3%] Building C object CMakeFiles/knc_obj.dir/csrc/src/timing.c.o
+[  7%] Building C object CMakeFiles/knc_obj.dir/csrc/src/crc32.c.o
+[ 10%] Building C object CMakeFiles/knc_obj.dir/csrc/src/sha256.c.o
+[ 14%] Building C object CMakeFiles/knc_obj.dir/csrc/src/kncds.c.o
+[ 17%] Building C object CMakeFiles/knc_obj.dir/csrc/src/kernels.c.o
+[ 21%] Building C object CMakeFiles/knc_obj.dir/csrc/src/fft.c.o
+[ 25%] Building C object CMakeFiles/knc_obj.dir/csrc/src/features.c.o
+[ 28%] Building C object CMakeFiles/knc_obj.dir/csrc/src/model.c.o
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[ 28%] Built target knc_obj
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 32%] Linking C static library libknc_core.a
+[ 35%] Linking C shared library libknc.so
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[ 35%] Built target knc_shared
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[ 35%] Built target knc_core
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 39%] Building C object CMakeFiles/knc_infer.dir/csrc/tools/knc_infer.c.o
+[ 42%] Building C object CMakeFiles/test_hash.dir/csrc/tests/test_hash.c.o
+[ 46%] Building C object CMakeFiles/knc_bench.dir/csrc/tools/knc_bench.c.o
+[ 50%] Building C object CMakeFiles/knc_validate.dir/csrc/tools/knc_validate.c.o
+[ 53%] Linking C executable test_hash
+[ 57%] Linking C executable knc_validate
+[ 60%] Linking C executable knc_infer
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[ 60%] Built target test_hash
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 60%] Built target knc_validate
+[ 64%] Building C object CMakeFiles/test_kncds.dir/csrc/tests/test_kncds.c.o
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 64%] Built target knc_infer
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 67%] Building C object CMakeFiles/test_kernels.dir/csrc/tests/test_kernels.c.o
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 71%] Building C object CMakeFiles/test_fft.dir/csrc/tests/test_fft.c.o
+[ 75%] Linking C executable test_kncds
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[ 75%] Built target test_kncds
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 78%] Building C object CMakeFiles/test_features.dir/csrc/tests/test_features.c.o
+[ 82%] Linking C executable test_fft
+[ 85%] Linking C executable test_features
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[ 85%] Built target test_fft
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Entering directory '/home/user/xeon-phi/build-portable'
+[ 89%] Building C object CMakeFiles/test_model.dir/csrc/tests/test_model.c.o
+[ 89%] Built target test_features
+[ 92%] Linking C executable knc_bench
+[ 96%] Linking C executable test_kernels
+[100%] Linking C executable test_model
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[100%] Built target test_kernels
+[100%] Built target knc_bench
+gmake[3]: Leaving directory '/home/user/xeon-phi/build-portable'
+[100%] Built target test_model
+gmake[2]: Leaving directory '/home/user/xeon-phi/build-portable'
+gmake[1]: Leaving directory '/home/user/xeon-phi/build-portable'
+cd build-portable && ctest --output-on-failure
+Test project /home/user/xeon-phi/build-portable
+    Start 1: test_hash
+1/6 Test #1: test_hash ........................   Passed    0.00 sec
+    Start 2: test_kncds
+2/6 Test #2: test_kncds .......................   Passed    0.01 sec
+    Start 3: test_kernels
+3/6 Test #3: test_kernels .....................   Passed    0.00 sec
+    Start 4: test_fft
+4/6 Test #4: test_fft .........................   Passed    1.54 sec
+    Start 5: test_features
+5/6 Test #5: test_features ....................   Passed    0.00 sec
+    Start 6: test_model
+6/6 Test #6: test_model .......................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   1.55 sec
+make -s -C mic/offload syntax-check && echo "mic/offload: C syntax OK (pragmas not checked)"
+mic/offload: C syntax OK (pragmas not checked)
+
+real	0m4.860s
+user	0m5.692s
+sys	0m0.849s

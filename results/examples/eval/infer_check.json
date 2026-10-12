@@ -1,0 +1,22 @@
+{
+  "logreg": {
+    "n": 1600,
+    "mismatches": 0,
+    "mismatch_indices": [],
+    "unexplained_mismatches": [],
+    "tie_margin": 1e-06,
+    "max_abs_logit_diff": 2.6423307986078726e-13,
+    "c_accuracy": 0.665625,
+    "sklearn_accuracy": 0.665625
+  },
+  "mlp": {
+    "n": 1600,
+    "mismatches": 0,
+    "mismatch_indices": [],
+    "unexplained_mismatches": [],
+    "tie_margin": 1e-06,
+    "max_abs_logit_diff": 1.7621459846850485e-12,
+    "c_accuracy": 0.66625,
+    "sklearn_accuracy": 0.66625
+  }
+}

@@ -1,0 +1,5 @@
+# Tiny config for unit tests.
+name: tiny
+master_seed: 12345
+samples_per_example: 256
+examples_per_class: {train: 6, val: 3, test: 3}

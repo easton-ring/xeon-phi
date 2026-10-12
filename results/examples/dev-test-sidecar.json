@@ -1,0 +1,152 @@
+{
+  "class_map": {
+    "16qam": 3,
+    "2fsk": 5,
+    "4fsk": 6,
+    "64qam": 4,
+    "8psk": 2,
+    "bpsk": 0,
+    "ofdm": 7,
+    "qpsk": 1
+  },
+  "config": {
+    "classes": [
+      "bpsk",
+      "qpsk",
+      "8psk",
+      "16qam",
+      "64qam",
+      "2fsk",
+      "4fsk",
+      "ofdm"
+    ],
+    "examples_per_class": {
+      "test": 200,
+      "train": 200,
+      "val": 200
+    },
+    "fsk": {
+      "mod_index": [
+        0.5,
+        1.0
+      ],
+      "sps": [
+        8
+      ]
+    },
+    "generator": "builtin",
+    "impairments": {
+      "fading": {
+        "flat": 0.25,
+        "none": 0.5,
+        "rayleigh": 0.25
+      },
+      "flat_gain_db": [
+        -3.0,
+        3.0
+      ],
+      "freq_offset": [
+        -0.01,
+        0.01
+      ],
+      "phase_offset": [
+        0.0,
+        6.283185307179586
+      ],
+      "timing_offset": [
+        0.0,
+        1.0
+      ]
+    },
+    "linear": {
+      "rrc_beta": [
+        0.2,
+        0.5
+      ],
+      "span_symbols": 8,
+      "sps": [
+        4,
+        8
+      ]
+    },
+    "master_seed": 20261012,
+    "name": "dev",
+    "ofdm": {
+      "active_subcarriers": 52,
+      "cp_len": 16,
+      "nfft": 64,
+      "qam_orders": [
+        4,
+        16
+      ]
+    },
+    "sample_rate_hz": "1.0e6",
+    "samples_per_example": 1024,
+    "snr_db": [
+      -10.0,
+      20.0
+    ]
+  },
+  "file": "test.kncds",
+  "format": "KNCRFDS",
+  "format_version": "1.0",
+  "generator": {
+    "name": "knc_rf_lab.builtin",
+    "version": "1.0"
+  },
+  "header_field_offsets": {
+    "data_crc32": 56,
+    "flags": 36,
+    "header_crc32": 60,
+    "header_size": 12,
+    "labels_offset": 40,
+    "magic": 0,
+    "num_classes": 28,
+    "num_examples": 16,
+    "payload_offset": 48,
+    "sample_format": 32,
+    "samples_per_example": 24,
+    "version_major": 8,
+    "version_minor": 10
+  },
+  "impairments": {
+    "columns": [
+      "index",
+      "class_id",
+      "class_name",
+      "snr_db",
+      "freq_offset",
+      "phase_offset",
+      "fading",
+      "fading_gain_re",
+      "fading_gain_im",
+      "sps",
+      "rrc_beta",
+      "timing_offset",
+      "start_offset",
+      "mod_index",
+      "ofdm_qam_order"
+    ],
+    "file": "test.impairments.csv",
+    "sha256": "73320bd6a2e4108de2a9de5833a92ff72021b17c3c424b0feb6a2135c8f06523"
+  },
+  "num_examples": 1600,
+  "sample_format": "complex64_interleaved_iq_le",
+  "sample_rate_hz": "1.0e6",
+  "samples_per_example": 1024,
+  "seeds": {
+    "bit_generator": "PCG64",
+    "derivation": "SeedSequence(entropy=master_seed, spawn_key=(crc32(split),)).spawn(1+N)",
+    "master_seed": 20261012,
+    "split_spawn_key": [
+      3632233996
+    ]
+  },
+  "sha256": "bd43d3045a2308085d01a0365e727564bc0cce9c6e15c1967f3c9254d10bd653",
+  "software": {
+    "knc_rf_lab": "0.1.0",
+    "numpy": "2.5.4",
+    "python": "3.13.16"
+  },
+  "split": "test"
+}
