@@ -139,3 +139,11 @@ passthrough the lab host kernel never loads the `mic` driver, so porting it
 to a 6.x kernel is not on the Milestone 2 path. The first fallback is a
 CentOS 7.9 guest with Keijser's patched 3.8.6 modules. KNL-stack ports
 (MPSS 4.x) are excluded: they do not drive the KNC 5110P. devcapcap/XeonPhi (read in full) has no booted card on kernel 5.6, and its KNC attempts with ported 3.x modules froze the host.
+
+**D-23 Driver-port route.** If the KNC host driver is ever ported to a modern
+kernel (`docs/kernel-port.md`), forward-port Keijser's patched MPSS 3.8.6
+modules (route A) and use mainline v5.9 `drivers/misc/mic` only as a
+reference. Reason: mainline's stack needs its own card-side kernel, and
+mainline has no KNC CPU build target, while route A keeps Intel's card OS and
+userspace. Development happens in a passthrough dev guest; `mic/port/ladder.sh`
+refuses to run on bare metal by default.
