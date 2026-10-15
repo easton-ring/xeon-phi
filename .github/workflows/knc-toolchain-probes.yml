@@ -1,0 +1,58 @@
+name: KNC toolchain probes
+
+on:
+  push:
+    paths:
+      - 'mic/toolchain/**'
+      - '.github/workflows/knc-toolchain-probes.yml'
+  pull_request:
+    paths:
+      - 'mic/toolchain/**'
+      - '.github/workflows/knc-toolchain-probes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-host-probes:
+    name: Inventory and compiler probe scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install diagnostic tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes clang binutils file
+
+      - name: Check shell syntax
+        run: |
+          sh -n mic/toolchain/collect-toolchain.sh
+          sh -n mic/toolchain/probe-native.sh
+
+      - name: Collect host toolchain inventory
+        run: sh mic/toolchain/collect-toolchain.sh results/toolchain/ci-inventory
+
+      - name: Run best-effort native compiler probes
+        run: sh mic/toolchain/probe-native.sh results/toolchain/ci-probe
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: knc-toolchain-probe-reports
+          path: results/toolchain/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Explain scope
+        if: always()
+        run: |
+          {
+            echo 'These results validate script execution and host-side compiler detection only.'
+            echo 'A standard GitHub-hosted runner has no Knights Corner card.'
+            echo 'No result from this workflow proves K1OM runtime, MPSS, offload, or physical-card compatibility.'
+          } >> "$GITHUB_STEP_SUMMARY"
