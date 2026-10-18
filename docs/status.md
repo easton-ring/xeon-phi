@@ -34,14 +34,17 @@ commit `e4baf64`, fresh venv, `make clean` first.
 | Training (logreg, MLP), evaluation per class / SNR / shifted set, confusion CSV | verified here | `make train evaluate` → `results/examples/eval/` |
 | C inference reproduces sklearn | verified here | `make infer-check` → 0 / 1600 mismatches for both models, max \|Δlogit\| 2.6e-13 / 1.8e-12 (`results/examples/eval/infer_check.json`) |
 | `make demo` (generate → validate Py+C → bench → train → evaluate → C inference) | verified here | 37 s wall time; `results/examples/logs/make-demo.log` |
-| `make test` (CTest + pytest) | verified here | CTest 6/6; pytest 105 passed, 1 skipped; `results/examples/logs/make-test.log` |
+| `make test` (CTest + pytest) | verified here | CTest 6/6; pytest 121 passed, 1 skipped (2026-10-18; the committed log `results/examples/logs/make-test.log` is from the Milestone 1 run, 105 passed) |
 | TorchSig adapter (2.2.0) | verified here, **separate venv only** | `results/examples/torchsig_adapter_test.log`; skipped in the dev venv (reason printed by `pytest -rs`); see `docs/torchsig.md` |
-| `mic/native/Makefile` (icc `-mmic`) | **unverified** | only `make -n` dry run; no icc here |
+| `mic/native/Makefile` icc profile (`-mmic`) | **unverified** | only `make -n` dry run; no icc here |
+| `mic/native/Makefile` `TOOLCHAIN=gcc-k1om` profile | **unverified** with the real cross-compiler; post-link K1OM guard **verified here** | `tests/test_mic_tools.py::test_gcc_k1om_profile_refuses_non_k1om_output` (host gcc disguised as the cross-compiler: binaries removed, build fails) |
+| Toolchain probes (`mic/toolchain/`) incl. MPSS cross-compiler checks, `elf-target.sh` | logic **verified here**; nothing run in the MPSS guest yet | `sh mic/toolchain/selftest.sh` (also in CI and `make portability`) |
+| `deploy.sh` strict dependency check, `run_sweep.sh` failure reporting | logic **verified here** with forged/stub inputs; never run against a card | `tests/test_mic_tools.py` |
 | `mic/native/deploy.sh`, `run_sweep.sh` | **unverified** | `sh -n` and `shellcheck -S warning` only |
 | MPSS guest VM files (`mic/guest/`: kickstart, libvirt XML, MPSS install and diagnostics scripts) | **unverified** | `ksvalidator -v RHEL7`, `xmllint`, `sh -n`, `shellcheck -S warning`. No VM was built: no KVM, card or vault.centos.org access here |
 | `make -C mic/guest check` (C tests via plain gcc Makefile) | verified here with gcc 13; **unverified** with EL7 gcc 4.8 | `make -C mic/guest check` → all 6 C tests ok |
 | `KNC_REQUIRE_MIC` guards (compile-time `__MIC__`, runtime `uname -m == k1om`) | compile-time guard verified here (fires with gcc); runtime check unverified | `gcc -DKNC_REQUIRE_MIC -fsyntax-only csrc/tools/knc_bench.c` → `#error` |
-| `mic/offload/offload_magsq.c` | **unverified** | C syntax only (`make -C mic/offload syntax-check`, gcc + stub header; offload pragmas not checked) |
+| `mic/offload/offload_magsq.c` | **unverified** (needs icc) | C syntax only (`make -C mic/offload syntax-check`; offload pragmas not checked). Argument parser and JSON emitter **verified here** in the gcc test build (`make -C mic/offload emit-test`, `tests/test_mic_tools.py`) |
 | MPSS / compiler / passthrough facts | **unverified** on hardware; SOURCED items have URLs | `docs/mpss-compatibility.md`, `docs/qemu-passthrough.md` |
 | Kernel driver port plan (`docs/kernel-port.md`), `mic/port/apiscan.sh`, `mic/port/ladder.sh` | plan **unverified**; scanner run here on the MPSS 3 (Keijser) and mainline v5.9 trees; ladder logic tested with stub commands only | `mic/port/apiscan.sh <tree>`; ladder: pass, kernel-BUG, error-bound and refusal paths exercised with stubbed `lspci`/`modprobe`/`micctrl`/`ssh` |
 | Any MIC measurement | **none exist** | benchmark files record `{"status": "unavailable", "execution_mode": "mic-native"/"mic-offload", ...}` |
@@ -62,7 +65,7 @@ make portability                                                               #
 
 - CTest: 6/6 passed (`test_hash`, `test_kncds`, `test_kernels`, `test_fft`,
   `test_features`, `test_model`), with OpenMP and without.
-- pytest: **105 passed, 1 skipped**. The skipped test is
+- pytest: **121 passed, 1 skipped** (105 at the Milestone 1 run; +16 in `tests/test_mic_tools.py`). The skipped test is
   `tests/test_torchsig.py`: "torchsig not installed (optional [torchsig] extra;
   CPU-only torch index is unreachable here, see docs/torchsig.md)". The same
   test passes in the separate TorchSig venv.
@@ -120,6 +123,21 @@ val 0.68).
 Each step ends with captured output saved under `results/hw/<date>/`. A step
 is "verified on hardware" only with that evidence.
 
+**Toolchain situation (2026-10): no Intel compiler is available** (issue #5).
+That splits Milestone 2:
+
+- **Native, via the MPSS GCC cross-compiler** (`make -C mic/native
+  TOOLCHAIN=gcc-k1om`): possible if MPSS ships it (forum-sourced:
+  `/usr/linux-k1om-4.7/bin/x86_64-k1om-linux-gcc`). Forum reports say it does
+  not use the 512-bit vector unit, so these are **scalar KNC** results. Every
+  record carries `metadata.toolchain` (`gcc-k1om`, vector ISA "none expected").
+  Never compare them with icc or vectorized host results without saying so.
+- **Native via icc** and **offload**: blocked until an Intel C++ 17 install is
+  available. LEO offload pragmas have no GCC equivalent.
+
+Milestone 2 can be claimed **for the native path only** with gcc-k1om results,
+labelled as scalar. The offload part stays open.
+
 **A. Host and passthrough** (operator; `docs/qemu-passthrough.md`)
 
 1. [host] BIOS: VT-x, VT-d, above-4G decoding on. Card cooled (forced
@@ -139,9 +157,13 @@ is "verified on hardware" only with that evidence.
    per the readme and reruns. Snapshot.
 7. [guest] `ssh mic0 uname -a; cat /proc/cpuinfo | head -30` → save. Confirm
    `uname -m` (fix the `KNC_REQUIRE_MIC` check if it is not `k1om`).
-8. [guest] Install Intel C++ 17.0 (PSXE 2017); save `icc -V`. Re-check the
-   UNVERIFIED rows of `docs/mpss-compatibility.md` against the 17.0
-   documentation shipped with it, and update the doc with the findings.
+8. [guest] Toolchain: `sh mic/toolchain/collect-toolchain.sh` and
+   `sh mic/toolchain/probe-native.sh`; save both directories. For the MPSS
+   cross-compiler the probe reports the K1OM verdict (object, executable,
+   OpenMP executable and its `libgomp` dependency), `__MIC__` and the vector
+   verdict (`ZMM_USED`/`NO_ZMM`). **If** an Intel C++ 17.0 install is
+   available: save `icc -V` and re-check the UNVERIFIED rows of
+   `docs/mpss-compatibility.md` against its documentation.
 
 **C. Native build and run**
 
@@ -152,38 +174,47 @@ is "verified on hardware" only with that evidence.
 10. [guest] Copy or generate the dev dataset. Verify that its SHA-256 matches
     the sidecar (`knc-rf-lab validate`), or regenerate it and record the new
     SHA-256.
-11. [guest] `make -C mic/native`; save the build log. Run
-    `build-mic/knc_bench --kernel magsq --synthetic` **on the guest** and
-    confirm it fails loudly (it must not run).
-12. [guest→card] `MIC_LIBDIR=<icc MIC runtime lib dir> mic/native/deploy.sh
-    data/dev/test.kncds`. The card-side `knc_validate` must print `"status":
-    "ok"` with the same SHA-256.
+11. [guest] `make -C mic/native TOOLCHAIN=gcc-k1om` (or the default icc
+    profile if available); save the build log. Every binary must pass the
+    K1OM ELF check ("K1OM ELF ok"). Run `build-mic/knc_bench --kernel magsq
+    --synthetic` **on the guest** and confirm it fails loudly (it must not run).
+12. [guest→card] `MIC_LIBDIR=<k1om runtime lib dir> mic/native/deploy.sh
+    data/dev/test.kncds` (gcc-k1om: the cross-compiler's sysroot `lib64`,
+    for `libgomp.so.1`; icc: the compiler's MIC lib dir). It stops unless
+    every non-glibc dependency resolves to a K1OM library, then smoke-runs
+    `knc_bench` on the card and runs `knc_validate`, which must print
+    `"status": "ok"` with the same SHA-256.
 13. [card] Smoke test: `ssh mic0 'cd /tmp/knc && LD_LIBRARY_PATH=. ./knc_bench
     --kernel fft --dataset test.kncds --batch 64 --threads 60'`. Check
     `execution_mode: "mic-native"`, `cpu_hypervisor_flag: false`, and
-    `max_rel` within the `docs/kernels.md` bounds. Run the f32/f64 NaN/Inf
-    expectations; if `-fp-model precise` does not preserve them, record that.
+    `max_rel` within the `docs/kernels.md` bounds, `metadata.toolchain`
+    as expected, and `openmp.team_size` = 60. Run the f32/f64 NaN/Inf
+    expectations; if the toolchain's FP flags do not preserve them, record that.
 14. [guest] Watch the card temperature (`micinfo`) during
     `mic/native/run_sweep.sh test.kncds > results/hw/<date>/mic-native-raw.jsonl`.
+    It exits 1 and prints a summary if any configuration failed; failed runs
+    are `unavailable` records with their stderr (full logs in `LOGDIR`).
 15. [guest] `python -m knc_rf_lab.benchmark --collect
     results/hw/<date>/mic-native-raw.jsonl --out
     results/hw/<date>/bench-mic-native.json --note "5110P native, MPSS 3.8.6,
-    icc 17.0.x"` (schema-validated).
+    <toolchain and version>"` (schema-validated).
 16. [card] Native C inference: copy `artifacts/models/*.txt`, run
     `knc_infer`, and compare its CSV with the host's (expect identical labels;
     document differences).
 
-**D. Offload build and run**
+**D. Offload build and run** (needs Intel C++ 17; blocked without it)
 
 17. [guest] `make -C mic/offload`; save the log. Run once with
     `OFFLOAD_REPORT=2` to confirm transfers go to `mic:0`.
 18. [guest] Stop the card (`micctrl --stop` or `service mpss stop`; verify
     the command) and run `build-mic/offload_magsq` → it must exit 3 (no
     device). Save this evidence of fail-loud. Restart the card.
-19. [guest] `build-mic/offload_magsq --n-examples 1024 --chunks 16 >
+19. [guest] `build-mic/offload_magsq --n-examples 1024 --chunks 16 --threads 236 >
     results/hw/<date>/offload-raw.jsonl`. Sweep `--chunks 1,4,16,64` and
-    `MIC_ENV_PREFIX=MIC MIC_OMP_NUM_THREADS=236 MIC_KMP_PLACE_THREADS=59c,4t`.
-    Collect with `--collect`.
+    `--threads 59,118,236`. Check `offload.mic_team_size` equals the request;
+    affinity via `MIC_ENV_PREFIX=MIC MIC_KMP_PLACE_THREADS=59c,4t`. Collect
+    with `--collect`. Every output element is checked against the host
+    reference (`error.max_abs`, `error.max_rel`).
 
 **E. Host baseline and results**
 
@@ -195,4 +226,5 @@ is "verified on hardware" only with that evidence.
     matrix with "verified on hardware" rows that point at those files.
 
 Milestone 2 is claimed only when steps 13, 15 and 19 have captured outputs in
-the repository.
+the repository. Without icc: "Milestone 2 (native, scalar gcc-k1om)" with
+steps 13 and 15, and offload explicitly open.

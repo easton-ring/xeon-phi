@@ -26,12 +26,15 @@ jobs:
       - name: Install diagnostic tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes clang binutils file
+          sudo apt-get install --yes clang binutils file shellcheck
 
-      - name: Check shell syntax
+      - name: Check shell syntax and lint
         run: |
-          sh -n mic/toolchain/collect-toolchain.sh
-          sh -n mic/toolchain/probe-native.sh
+          for f in mic/toolchain/*.sh; do sh -n "$f"; done
+          shellcheck -S warning -s sh mic/toolchain/*.sh
+
+      - name: Self-test verdict logic (fails the job on a regression)
+        run: sh mic/toolchain/selftest.sh results/toolchain/ci-selftest
 
       - name: Collect host toolchain inventory
         run: sh mic/toolchain/collect-toolchain.sh results/toolchain/ci-inventory

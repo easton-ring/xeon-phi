@@ -434,11 +434,31 @@
                 },
                 "env": {
                   "type": "object"
+                },
+                "team_size": {
+                  "type": "integer",
+                  "minimum": 1
                 }
               }
             },
             "git_commit": {
               "type": "string"
+            },
+            "toolchain": {
+              "type": "object",
+              "required": [
+                "name",
+                "vector_isa"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "vector_isa": {
+                  "type": "string"
+                }
+              }
             }
           }
         },
@@ -462,6 +482,17 @@
               "minimum": 1
             },
             "device": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "kernel_includes_transfer": {
+              "type": "boolean"
+            },
+            "requested_threads": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "mic_team_size": {
               "type": "integer",
               "minimum": 0
             }

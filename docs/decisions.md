@@ -147,3 +147,18 @@ reference. Reason: mainline's stack needs its own card-side kernel, and
 mainline has no KNC CPU build target, while route A keeps Intel's card OS and
 userspace. Development happens in a passthrough dev guest; `mic/port/ladder.sh`
 refuses to run on bare metal by default.
+
+**D-24 No Intel compiler: native via the MPSS GCC cross-compiler, offload
+blocked.** Issue #5: no icc installer or license. `mic/native/Makefile` gains a
+`TOOLCHAIN=gcc-k1om` profile for the k1om GCC that MPSS reportedly ships. It
+may not define `__MIC__`, so that profile replaces the compile-time guard with a
+mandatory post-link check that every binary is a K1OM ELF (both profiles run
+it). That compiler reportedly does not use the 512-bit vector unit, so records
+carry `metadata.toolchain` and gcc-k1om results are reported as scalar KNC
+results. LEO offload stays icc-only and is blocked until icc is available.
+
+**D-25 K1OM verdicts come from the ELF header.** `mic/toolchain/elf-target.sh`
+reads `e_machine` (181 = EM_K1OM) with `od`. The earlier probe grepped `file`
+and `objdump` output, which includes the file name; names containing "k1om"
+made a host object read as K1OM. The probe, the native Makefile and
+`deploy.sh` all use the header check; `selftest.sh` guards against regressions.

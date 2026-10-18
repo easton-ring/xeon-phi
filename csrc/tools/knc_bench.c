@@ -12,6 +12,7 @@
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
 #endif
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,8 +42,17 @@
 #endif
 
 /* A binary labeled mic-native must be a KNC (-mmic) build and must run on the card. */
-#if defined(KNC_REQUIRE_MIC) && !defined(__MIC__)
+#if defined(KNC_REQUIRE_MIC) && !defined(__MIC__) && !defined(KNC_TOOLCHAIN_GCC_K1OM)
 #error "KNC_REQUIRE_MIC set but __MIC__ is not defined: this is not a -mmic build"
+#endif
+/* The MPSS GCC cross-compiler may not define __MIC__ (UNVERIFIED). For that
+ * toolchain mic/native/Makefile instead rejects any linked binary whose ELF
+ * e_machine is not K1OM (mic/toolchain/elf-target.sh). */
+#ifndef KNC_TOOLCHAIN
+#define KNC_TOOLCHAIN "cmake-host"
+#endif
+#ifndef KNC_VECTOR_ISA
+#define KNC_VECTOR_ISA "host compiler auto-vectorization (see build_flags)"
 #endif
 
 #define TWO_PI 6.283185307179586476925286766559
@@ -359,6 +369,10 @@ int main(int argc, char **argv)
         die("need >= 2 samples per example");
     if (!strcmp(o.kernel, "xcorr") && (o.xlen < 1 || o.xlen > n))
         die("--xcorr-len must be in [1, samples]");
+    /* every buffer holds at most 2*B*n doubles; reject sizes that overflow */
+    if ((unsigned long)B > (unsigned long)LONG_MAX / 2u / (unsigned long)n ||
+        (size_t)(2 * B * n) > (size_t)-1 / sizeof(double))
+        die("--batch x samples too large");
     esz = f64 ? sizeof(double) : sizeof(float);
     x32 = (float *)amalloc((size_t)(2 * B * n) * sizeof(float));
     outn = 2 * B * n;
@@ -532,9 +546,19 @@ int main(int argc, char **argv)
 #endif
     fprintf(fo, ", \"build_flags\": "); jstr(fo, KNC_BUILD_FLAGS);
 #ifdef _OPENMP
-    fprintf(fo, ", \"openmp\": {\"version\": %d, \"max_threads\": %d", _OPENMP, omp_get_max_threads());
+    {
+        /* observed team size: what a parallel region actually got, not just the request */
+        int team = 0;
+#pragma omp parallel
+        {
+#pragma omp single
+            team = omp_get_num_threads();
+        }
+        fprintf(fo, ", \"openmp\": {\"version\": %d, \"max_threads\": %d, \"team_size\": %d",
+                _OPENMP, omp_get_max_threads(), team);
+    }
 #else
-    fprintf(fo, ", \"openmp\": {\"version\": null, \"max_threads\": 1");
+    fprintf(fo, ", \"openmp\": {\"version\": null, \"max_threads\": 1, \"team_size\": 1");
 #endif
     {
         static const char *envs[] = {"OMP_NUM_THREADS", "OMP_PROC_BIND", "OMP_PLACES",
@@ -548,7 +572,9 @@ int main(int argc, char **argv)
         }
         fprintf(fo, "}}");
     }
-    fprintf(fo, ", \"git_commit\": "); jstr(fo, KNC_GIT_COMMIT);
+    fprintf(fo, ", \"toolchain\": {\"name\": "); jstr(fo, KNC_TOOLCHAIN);
+    fprintf(fo, ", \"vector_isa\": "); jstr(fo, KNC_VECTOR_ISA);
+    fprintf(fo, "}, \"git_commit\": "); jstr(fo, KNC_GIT_COMMIT);
     fprintf(fo, "}}\n");
     if (fo != stdout)
         fclose(fo);

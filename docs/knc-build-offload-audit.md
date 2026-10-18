@@ -19,6 +19,28 @@ The project has a sensible separation between the portable host pipeline, KNC-na
 
 Priority labels are engineering priorities, not claims that a defect has been reproduced.
 
+## Status of the findings (updated 2026-10-18)
+
+Code changes in response to this audit. "Done here" means implemented and
+tested in the cloud VM without a card or an Intel compiler. Everything that
+needs the card or icc is still open.
+
+| finding | status | where |
+|---------|--------|-------|
+| P1 MIC-side thread configuration | **done here / open on card**: offload has `--threads` (`num_threads` clause on the card) and records `offload.requested_threads` and the measured `offload.mic_team_size`; `knc_bench` records `openmp.team_size` from a real parallel region. Native sweeps set `OMP_NUM_THREADS` on the card over ssh and `knc_bench` calls `omp_set_num_threads()`, so the original concern applies to offload only | `mic/offload/offload_magsq.c`, `csrc/tools/knc_bench.c` |
+| P1 compile offload with the real Intel compiler | **open**: needs icc 17 (not available, issue #5). GCC syntax check is labelled as syntax-only; the parser and JSON emitter now also build and are tested with gcc (`make -C mic/offload emit-test`) | `mic/offload/Makefile` |
+| P1 validate all offload patterns end to end | **partly done**: every output element is checked against a double host reference for each pattern; the host-fallback probe (`__MIC__`) aborts. Two data sizes and device-allocation leak checks need the card | `offload_magsq.c` (`check_all`) |
+| P2 strict native runtime dependencies | **done here**: `deploy.sh` resolves every non-glibc `NEEDED` library in `MIC_LIBDIR`, requires it to be K1OM, stops otherwise, then smoke-runs `knc_bench` on the card before `knc_validate` | `mic/native/deploy.sh` |
+| P2 argument parsing and size arithmetic | **done here**: offload uses strict `strtol` parsing (missing value, trailing characters, range), overflow checks before `B*S`, a 6 GiB buffer limit; `knc_bench` rejects `batch x samples` that would overflow | `offload_magsq.c` (`parse_args`), `knc_bench.c`; tests in `tests/test_mic_tools.py` |
+| P2 error metrics | **done here**: offload reports `max_abs` and `max_rel` over elements with reference > 0 (no `|ref|=0 → 1` fallback); the metric string says so | `offload_magsq.c` |
+| P2 chunking boundaries | **done here** for argument validation (`B % chunks`, chunks ≤ B); boundary runs on the card still open | `offload_magsq.c` |
+| P2 compute vs end-to-end time | **done here**: `offload.kernel_includes_transfer` marks per_call/chunked (end to end) vs resident (kernel only, transfers in `timing.transfer`); raw samples kept in measurement order; percentiles now linear like `knc_bench` | `offload_magsq.c` |
+| P2 sweep failures | **done here**: `run_sweep.sh` keeps per-run stderr, puts command, exit status and stderr tail into the `unavailable` record, prints a summary and exits 1 on any failure | `mic/native/run_sweep.sh` |
+| P2 build provenance | **done here**: offload builds get the `-dirty` suffix, records get a timestamp, host OS, the real hypervisor flag and `metadata.toolchain`; native records carry `metadata.toolchain` (`icc-mmic` or `gcc-k1om` with its vector ISA). MPSS version is still only in the run's diagnostics | `mic/offload/Makefile`, `mic/native/Makefile` |
+
+The preflight checklist below overlaps with the Milestone 2 checklist in
+`docs/status.md`, which is the one kept up to date.
+
 ## Findings and recommendations
 
 ### P1 — Prove MIC-side thread configuration

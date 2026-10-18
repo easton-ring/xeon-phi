@@ -68,6 +68,8 @@ portability:
 	cmake --build $(BUILD)-portable -j $(JOBS)
 	cd $(BUILD)-portable && ctest --output-on-failure
 	$(MAKE) -s -C mic/offload syntax-check && echo "mic/offload: C syntax OK (pragmas not checked)"
+	$(MAKE) -s -C mic/offload emit-test OUT=$(abspath $(BUILD)-portable) && echo "mic/offload: argument parser + JSON emitter build OK (test mode, no offload code)"
+	sh mic/toolchain/selftest.sh $(abspath $(BUILD)-portable)/toolchain-selftest > /dev/null && echo "mic/toolchain: selftest OK"
 
 clean:
 	rm -rf $(BUILD)-portable $(BUILD) $(DATA) $(RESULTS)/bench-host.* $(RESULTS)/eval artifacts
