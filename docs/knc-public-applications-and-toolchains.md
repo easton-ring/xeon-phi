@@ -12,6 +12,11 @@ This note collects public examples and historical documentation relevant to the 
 
 ## Alternative native compiler investigation
 
+### GCC cross-compiler shipped with MPSS (check this first)
+- Location reported on Intel's forum: `/usr/linux-k1om-4.7/bin/x86_64-k1om-linux-gcc`, with target libraries under `/usr/linux-k1om-4.7/linux-k1om/lib64` (sources in `docs/mpss-compatibility.md`).
+- Why it matters: it may already be installed in the MPSS 3.8.6 guest. No build, no license.
+- Caveat: reported to generate no code for the 512-bit vector unit. `mic/toolchain/probe-native.sh` finds it and reports K1OM, OpenMP, `__MIC__` and vector verdicts; `make -C mic/native TOOLCHAIN=gcc-k1om` builds the project with it.
+
 ### apc-llc GCC 5.1.1 adapted for KNC
 - Repository: https://github.com/apc-llc/gcc-5.1.1-knc
 - Why it matters: public GCC source and build notes aimed at the KNC `k1om` target. This is a potential route to investigating a native compiler without starting a compiler implementation from scratch.

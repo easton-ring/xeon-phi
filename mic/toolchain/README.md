@@ -27,15 +27,22 @@ Collect diagnostics first, then run the probes. Share the resulting text files a
 - Intel MIC/KNC runtime library paths beneath `/opt/intel` and standard library locations.
 - A host-only C compilation as a control.
 - An Intel compiler `icc -mmic` object-code probe, a GCC `-mmic` probe, and a Clang `--target=k1om-linux-gnu` probe when those tools exist.
-- Object metadata, including the ELF machine name where available.
+- **The k1om GCC cross-compiler shipped with MPSS** (forum-sourced location `/usr/linux-k1om-4.7/bin/x86_64-k1om-linux-gcc`; it is not on `PATH`). The inventory searches `/usr/linux-k1om-*`, `/opt/mpss` and `PATH` for `*k1om*-gcc`; the probe then, for each candidate (or `KNC_CROSS_CC=/path/to/compiler`):
+  - builds an object **and** links a full executable (never executed),
+  - links an OpenMP program and lists its `NEEDED` libraries (is there a k1om `libgomp`?),
+  - dumps the predefined macros (is `__MIC__` defined? see `*-macros.txt`),
+  - compiles a vector loop to assembly and reports `VECTOR_VERDICT: ZMM_USED` or `NO_ZMM` (whether the 512-bit vector unit is used at all).
+- Object metadata. The K1OM verdict comes from the ELF header's `e_machine` field (`elf-target.sh`, EM_K1OM = 181), not from tool output: `file` and `objdump` print the file name, and probe names contain "k1om", which used to produce false positives.
 
 ## Interpret the result conservatively
 
 A host compilation succeeding proves only that the ordinary host compiler works. It does **not** prove KNC support.
 
-The strongest positive result from `probe-native.sh` is an object whose ELF machine is positively identified as **Intel K1OM** (the KNC target). If compilation succeeds but the machine type cannot be identified, the script labels the result inconclusive. A compiler accepting an option is not enough.
+The strongest positive result from `probe-native.sh` is an executable whose ELF machine is positively identified as **Intel K1OM** (the KNC target). If compilation succeeds but the machine type cannot be identified, the script labels the result inconclusive. A compiler accepting an option is not enough.
 
-Object-code generation is not the same as a runnable native executable. A later stage must link a complete executable with compatible target libraries, copy it to the card, and run it on the physical 5110P. The current probes intentionally stop before that stage.
+A linked K1OM executable is still not a tested one: it must be copied to the card with its target libraries and run on the physical 5110P (`mic/native/deploy.sh` does that, with a smoke run). The probes stop before running anything.
+
+`NO_ZMM` for the MPSS cross-compiler means binaries built with it (`make -C mic/native TOOLCHAIN=gcc-k1om`) are scalar KNC code. That is a valid but different experiment from icc-vectorized code; benchmark records carry `metadata.toolchain` so the two are never mixed.
 
 The GCC `-mmic` and Clang target probes are exploratory negative/positive checks, not assertions that those projects support KNC. Modern compiler releases may have removed old targets. Do not install a random old compiler or alter the VM based on one failed probe.
 
@@ -49,6 +56,10 @@ KNC_CC=/path/to/compiler KNC_CFLAGS='-target k1om-linux-gnu' \
 ```
 
 The command is run as a compiler path plus whitespace-separated flags. Use only a trusted local compiler path and ordinary compiler flags. The result is still considered positive only when object metadata identifies K1OM.
+
+## Self-test
+
+`sh mic/toolchain/selftest.sh [WORKDIR]` checks the verdict logic on any machine with gcc: a forged K1OM object must be recognised, a host compiler disguised as a k1om cross-compiler (in a path containing "k1om") must never be reported as K1OM, and the inventory must list every tool. CI (`.github/workflows/knc-toolchain-probes.yml`) runs it plus `shellcheck`, and fails on a regression.
 
 ## Safety and limitations
 

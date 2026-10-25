@@ -52,7 +52,9 @@ run kernel uname -a
 run host-architecture uname -m
 run cpuinfo sh -c 'head -40 /proc/cpuinfo'
 run memory sh -c 'head -20 /proc/meminfo'
-run path command -v gcc g++ clang clang++ icc icpc as ld readelf objdump file llvm-config llvm-mc llvm-as micinfo micctrl miccheck micnativeloadex
+# One name per `command -v`: dash (Debian/Ubuntu /bin/sh) reports only the first
+# of several names, bash reports all of them.
+run_shell path 'for t in gcc g++ clang clang++ icc icpc as ld readelf objdump file llvm-config llvm-mc llvm-as micinfo micctrl miccheck micnativeloadex; do p=$(command -v "$t" 2>/dev/null) && printf "%-16s %s\n" "$t" "$p" || printf "%-16s <not found>\n" "$t"; done'
 run gcc-version gcc --version
 run gcc-target gcc -dumpmachine
 run gxx-version g++ --version
@@ -75,6 +77,10 @@ run miccheck miccheck
 run pci-card sh -c 'lspci -nn -d 8086:2250'
 run ssh-card sh -c 'ssh -o BatchMode=yes -o ConnectTimeout=5 mic0 "uname -a; uname -m; grep -m1 -E \"model name|family|processor\" /proc/cpuinfo"'
 run intel-mic-libraries sh -c 'find /opt/intel -type f \( -name "libiomp5.so" -o -name "libimf.so" -o -name "libsvml.so" -o -name "libintlc.so*" -o -name "libirng.so" \) -path "*mic*" -print 2>/dev/null'
+# MPSS ships a GCC cross-compiler for k1om outside PATH (forum-sourced locations:
+# /usr/linux-k1om-*/bin/x86_64-k1om-linux-gcc; Yocto-style SDKs under /opt/mpss).
+run_shell k1om-cross-compilers 'for d in /usr/linux-k1om-* /opt/mpss /usr/local; do [ -d "$d" ] && find "$d" -maxdepth 8 \( -type f -o -type l \) -name "*k1om*-gcc" -print 2>/dev/null; done; for t in x86_64-k1om-linux-gcc k1om-mpss-linux-gcc; do command -v "$t" 2>/dev/null; done; true'
+run_shell k1om-runtime-libraries 'for d in /usr/linux-k1om-* /opt/mpss; do [ -d "$d" ] && find "$d" -maxdepth 8 \( -name "libgomp.so*" -o -name "libc.so.6" -o -name "ld-linux*-k1om*" \) -print 2>/dev/null; done; true'
 run standard-library-candidates sh -c 'for d in /usr/lib /usr/lib64 /lib /lib64 /usr/local/lib; do [ ! -d "$d" ] || find "$d" -maxdepth 2 -type f \( -name "*k1om*" -o -name "*mic*" \) -print 2>/dev/null; done'
 run git-state sh -c 'git rev-parse HEAD 2>/dev/null; git status --short 2>/dev/null'
 

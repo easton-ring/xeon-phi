@@ -99,7 +99,8 @@ Results file:
 | `timing` | `{unit:"s", init, load, transfer, kernel:{median,min,max,q25,q75,iqr,samples[]}, post}` | `transfer` may be `null` |
 | `throughput` | `{complex_samples_per_s, examples_per_s}` | |
 | `error` | `{reference, examples_checked, metric, max_abs, max_rel}` or `{status:"unavailable", reason}` | |
-| `metadata` | `{timestamp_utc, cpu_model, cpu_hypervisor_flag, online_cpus, os{sysname,release,machine}, compiler, build_flags, openmp{version,max_threads,env{OMP_*,KMP_*}}, git_commit}` | |
+| `metadata` | `{timestamp_utc, cpu_model, cpu_hypervisor_flag, online_cpus, os{sysname,release,machine}, compiler, build_flags, openmp{version,max_threads,team_size?,env{OMP_*,KMP_*}}, toolchain?{name,vector_isa}, git_commit}` | `team_size` is measured in a real parallel region (observed, not requested). `toolchain.name`: `cmake-host`, `icc-mmic`, `gcc-k1om`, `icc-offload`; `vector_isa` says whether the KNC vector unit can be in use. **Records with different `toolchain.name` are different experiments**: gcc-k1om KNC code is expected to be scalar |
+| `offload` | `{pattern, chunks, device, kernel_includes_transfer?, requested_threads?, mic_team_size?}` | optional, offload records only. `kernel_includes_transfer: true` (per_call, chunked) means `timing.kernel` is end to end and `timing.transfer` is null |
 
 `missing_record`: `{schema_version, status: "skipped" | "unavailable",
 reason, [execution_mode], [kernel], [threads]}`. A measurement that was not

@@ -12,10 +12,10 @@ endif
 FLAGS    ?= -qopenmp -O3 -std=c99 -fp-model precise
 ROOT     := ../..
 OUT      ?= $(ROOT)/build-mic
-GIT      := $(shell git -C $(ROOT) rev-parse HEAD 2>/dev/null || echo unknown)
+GIT      := $(shell git -C $(ROOT) rev-parse HEAD 2>/dev/null || echo unknown)$(shell test -n "$$(git -C $(ROOT) status --porcelain --untracked-files=no 2>/dev/null)" && echo -dirty)
 DEFS     := -DKNC_GIT_COMMIT='"$(GIT)"' -DKNC_BUILD_FLAGS='"$(CC) $(FLAGS)"'
 
-.PHONY: all syntax-check clean
+.PHONY: all syntax-check emit-test clean
 all: $(OUT)/offload_magsq
 
 $(OUT)/offload_magsq: offload_magsq.c
@@ -25,6 +25,11 @@ $(OUT)/offload_magsq: offload_magsq.c
 syntax-check:
 	gcc -std=c99 -fopenmp -fsyntax-only -Wall -Wno-unknown-pragmas -D__INTEL_OFFLOAD \
 	    -D__INTEL_COMPILER=1700 -DKNC_SYNTAX_CHECK -Isyntax-stub offload_magsq.c
+
+# Test-only build of the argument parser + JSON emitter with gcc (no offload code).
+emit-test:
+	mkdir -p $(OUT)
+	gcc -std=c99 -O1 -Wall -Wextra -Werror -DKNC_OFFLOAD_EMIT_TEST -o $(OUT)/offload_magsq_emit_test offload_magsq.c -lm
 
 clean:
 	rm -f $(OUT)/offload_magsq
