@@ -162,3 +162,11 @@ reads `e_machine` (181 = EM_K1OM) with `od`. The earlier probe grepped `file`
 and `objdump` output, which includes the file name; names containing "k1om"
 made a host object read as K1OM. The probe, the native Makefile and
 `deploy.sh` all use the header check; `selftest.sh` guards against regressions.
+
+**D-26 Lab host: dual Xeon Platinum 8175M on a Gigabyte MD71-HB0.** One
+machine serves both as the bare-metal host baseline and as the passthrough
+host for the MPSS VM. Open risk recorded in `docs/host-build.md`: the 8175M
+is an OEM part listed at 240 W by sellers, the board is rated 205 W per socket
+by retailers, and no source confirms this pairing. `mic/host/host-check.sh`
+(read-only) records the power limit the BIOS applies, together with the
+passthrough prerequisites.

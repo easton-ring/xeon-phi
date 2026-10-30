@@ -47,6 +47,7 @@ commit `e4baf64`, fresh venv, `make clean` first.
 | `mic/offload/offload_magsq.c` | **unverified** (needs icc) | C syntax only (`make -C mic/offload syntax-check`; offload pragmas not checked). Argument parser and JSON emitter **verified here** in the gcc test build (`make -C mic/offload emit-test`, `tests/test_mic_tools.py`) |
 | MPSS / compiler / passthrough facts | **unverified** on hardware; SOURCED items have URLs | `docs/mpss-compatibility.md`, `docs/qemu-passthrough.md` |
 | Kernel driver port plan (`docs/kernel-port.md`), `mic/port/apiscan.sh`, `mic/port/ladder.sh` | plan **unverified**; scanner run here on the MPSS 3 (Keijser) and mainline v5.9 trees; ladder logic tested with stub commands only | `mic/port/apiscan.sh <tree>`; ladder: pass, kernel-BUG, error-bound and refusal paths exercised with stubbed `lspci`/`modprobe`/`micctrl`/`ssh` |
+| Lab host build plan (`docs/host-build.md`) and `mic/host/host-check.sh` | plan **unverified** (machine not built); check script logic **verified here** (runs in this VM, flags it as a VM; card branch tested with a stubbed `lspci`) | `tests/test_mic_tools.py::test_host_check_*` |
 | Any MIC measurement | **none exist** | benchmark files record `{"status": "unavailable", "execution_mode": "mic-native"/"mic-offload", ...}` |
 
 ## Commands (all confirmed working here)
@@ -140,7 +141,7 @@ labelled as scalar. The offload part stays open.
 
 **A. Host and passthrough** (operator; `docs/qemu-passthrough.md`)
 
-1. [host] BIOS: VT-x, VT-d, above-4G decoding on. Card cooled (forced
+1. [host] Build per `docs/host-build.md`; run `sudo sh mic/host/host-check.sh` and save its directory. BIOS: VT-x, VT-d, above-4G decoding on. Card cooled (forced
    airflow) and powered. Save `lspci -nn -vvv -s <BDF>` (BAR0 8 GB assigned).
 2. [host] `intel_iommu=on iommu=pt`; save `dmesg | grep -e DMAR -e IOMMU`
    and the IOMMU group listing.

@@ -141,3 +141,31 @@ def test_knc_bench_rejects_huge_batch():
     p = run([str(find_binary("knc_bench")), "--kernel", "magsq", "--synthetic", "--samples", "1024",
              "--batch", "9000000000000000"])
     assert p.returncode == 2 and "too large" in p.stderr
+
+
+def test_host_check_runs_and_reports(tmp_path):
+    """In this VM: must flag the hypervisor, never crash, exit 1 on FAILs."""
+    p = run(["sh", str(ROOT / "mic/host/host-check.sh"), str(tmp_path / "hc")])
+    summary = (tmp_path / "hc" / "SUMMARY.txt").read_text()
+    for check in ("bare-metal", "vt-x", "iommu-active", "kvm", "card", "governor", "cpu-power", "memory"):
+        assert f" {check} " in summary, check
+    assert p.returncode == (1 if "FAIL " in summary else 0)
+
+
+def test_host_check_card_branch_with_stub_lspci(tmp_path):
+    """A card that lspci reports but sysfs does not know must give verdicts, not a crash."""
+    stub = tmp_path / "bin" / "lspci"
+    stub.parent.mkdir()
+    stub.write_text('#!/bin/sh\ncase "$*" in\n'
+                    '  *"-D -d 8086:2250"*) echo "0000:3b:00.0 Co-processor: Intel Xeon Phi 5110P";;\n'
+                    '  *-vvv*) printf "\\tRegion 0: Memory at 38000000000 (64-bit, prefetchable) [size=8G]\\n'
+                    '\\t\\tLnkCap:\\tPort #0, Speed 5GT/s, Width x16\\n\\t\\tLnkSta:\\tSpeed 5GT/s, Width x8\\n";;\n'
+                    '  *) echo "3b:00.0 Co-processor: Intel Xeon Phi 5110P";;\nesac\n')
+    stub.chmod(0o755)
+    env = {**os.environ, "PATH": f"{stub.parent}:{os.environ['PATH']}"}
+    p = run(["sh", str(ROOT / "mic/host/host-check.sh"), str(tmp_path / "hc")], env=env)
+    s = (tmp_path / "hc" / "SUMMARY.txt").read_text()
+    assert "PASS  card-bar0" in s and "[size=8G]" in s
+    assert "WARN  card-link" in s and "Width x8" in s      # x8 link is flagged
+    assert "FAIL  card-iommu" in s                          # no sysfs group here
+    assert p.returncode == 1
