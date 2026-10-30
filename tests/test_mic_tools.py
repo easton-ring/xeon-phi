@@ -169,3 +169,41 @@ def test_host_check_card_branch_with_stub_lspci(tmp_path):
     assert "WARN  card-link" in s and "Width x8" in s      # x8 link is flagged
     assert "FAIL  card-iommu" in s                          # no sysfs group here
     assert p.returncode == 1
+
+
+def _stub_lspci_with_gpu(tmp_path, gpu_width):
+    stub = tmp_path / "bin" / "lspci"
+    stub.parent.mkdir()
+    stub.write_text('#!/bin/sh\ncase "$*" in\n'
+                    '  *"-D -d 8086:2250"*) echo "0000:3b:00.0 Co-processor: Intel Xeon Phi 5110P";;\n'
+                    '  *-Dn*) printf "0000:3b:00.0 0b40: 8086:2250\\n0000:af:00.0 0302: 10de:1e30 (rev a1)\\n'
+                    '0000:af:00.1 0403: 10de:10f7 (rev a1)\\n";;\n'
+                    '  *"-vvv -s 0000:af"*) printf "\\t\\tLnkCap:\\tPort #0, Speed 8GT/s, Width x16\\n'
+                    f'\\t\\tLnkSta:\\tSpeed 8GT/s, Width {gpu_width}\\n";;\n'
+                    '  *-vvv*) printf "\\tRegion 0: Memory at 38000000000 (64-bit, prefetchable) [size=8G]\\n'
+                    '\\t\\tLnkCap:\\tPort #0, Speed 5GT/s, Width x16\\n\\t\\tLnkSta:\\tSpeed 5GT/s, Width x16\\n";;\n'
+                    '  *"-s 0000:af"*) echo "af:00.0 3D controller: NVIDIA Corporation Device 1e30";;\n'
+                    '  *) echo "3b:00.0 Co-processor: Intel Xeon Phi 5110P";;\nesac\n')
+    stub.chmod(0o755)
+    return {**os.environ, "PATH": f"{stub.parent}:{os.environ['PATH']}"}
+
+
+def test_host_check_gpu_branch_with_stub_lspci(tmp_path):
+    """An NVIDIA 3D controller is reported with its link; its audio function is not a GPU."""
+    env = _stub_lspci_with_gpu(tmp_path, "x8")
+    run(["sh", str(ROOT / "mic/host/host-check.sh"), str(tmp_path / "hc")], env=env)
+    s = (tmp_path / "hc" / "SUMMARY.txt").read_text()
+    assert "INFO  gpu " in s and "0000:af:00.0" in s and "NVIDIA" in s
+    assert "0000:af:00.1" not in s                           # HDMI audio function skipped
+    assert "WARN  gpu-link" in s and "Width x8" in s
+    assert "PASS  card-link" in s
+    assert " gpu-numa " in s and " gpu-iommu " in s and " gpu-driver " in s
+
+
+def test_host_check_gpu_absent_is_not_a_failure(tmp_path):
+    p = run(["sh", str(ROOT / "mic/host/host-check.sh"), str(tmp_path / "hc")])
+    s = (tmp_path / "hc" / "SUMMARY.txt").read_text()
+    if "10de:" not in subprocess.run(["sh", "-c", "lspci -n 2>/dev/null"], capture_output=True, text=True).stdout:
+        assert "INFO  gpu " in s and "no NVIDIA GPU" in s or "lspci not installed" in s
+    assert "FAIL  gpu" not in s
+    assert p.returncode == (1 if "FAIL " in s else 0)

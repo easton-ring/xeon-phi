@@ -2,7 +2,8 @@
 # Read-only first-boot check for the bare-metal lab host (docs/host-build.md).
 #                                                               *** UNVERIFIED ***
 # Collects what decides whether the Xeon Phi 5110P can be passed through to the
-# MPSS VM and whether host benchmark numbers will be stable, and prints one
+# MPSS VM, whether host benchmark numbers will be stable, and where an optional
+# NVIDIA GPU sits (link, NUMA node, IOMMU group, power limit), and prints one
 # verdict line per check: PASS / WARN / FAIL / INFO.
 #
 #   sh mic/host/host-check.sh [OUTDIR]          (root gives more detail: lspci link
@@ -33,6 +34,19 @@ log() {  # log NAME COMMAND... : save output of a command, never fail
     return 0
 }
 have() { command -v "$1" >/dev/null 2>&1; }
+link_verdict() {  # link_verdict CHECK DEV LSPCI_VVV_FILE : x16 expected
+    sta=$(sed -n 's/^[[:space:]]*LnkSta:[[:space:]]*//p' "$3" | head -1)
+    cap=$(sed -n 's/^[[:space:]]*LnkCap:[[:space:]]*//p' "$3" | head -1)
+    if [ -z "$sta" ]; then
+        verdict INFO "$1" "$2 link status needs root (lspci -vvv)"
+    else
+        case "$sta" in
+            *"Width x16"*) verdict PASS "$1" "$2 $sta" ;;
+            *) verdict WARN "$1" "$2 $sta (capable: $cap); x16 slot wired to a CPU expected" ;;
+        esac
+    fi
+}
+card_nodes=""
 
 say "knc-rf-lab host check $(date -u +%Y-%m-%dT%H:%M:%SZ)  output: $OUT"
 say "user: $(id -un 2>/dev/null) (root gives lspci capabilities and dmidecode)"
@@ -110,17 +124,9 @@ else
             *unassigned*|*disabled*|"") verdict FAIL card-bar0 "$d BAR0 not assigned: enable Above 4G Decoding (docs/qemu-passthrough.md)" ;;
             *) verdict PASS card-bar0 "$d $(echo "$bar" | sed 's/^[[:space:]]*//')" ;;
         esac
-        sta=$(sed -n 's/^[[:space:]]*LnkSta:[[:space:]]*//p' "$OUT/card-$d.txt" | head -1)
-        cap=$(sed -n 's/^[[:space:]]*LnkCap:[[:space:]]*//p' "$OUT/card-$d.txt" | head -1)
-        if [ -z "$sta" ]; then
-            verdict INFO card-link "$d link status needs root (lspci -vvv)"
-        else
-            case "$sta" in
-                *"Width x16"*) verdict PASS card-link "$d $sta" ;;
-                *) verdict WARN card-link "$d $sta (capable: $cap); x16 slot wired to a CPU expected" ;;
-            esac
-        fi
+        link_verdict card-link "$d" "$OUT/card-$d.txt"
         node=$(cat "/sys/bus/pci/devices/$d/numa_node" 2>/dev/null || echo "?")
+        card_nodes="$card_nodes$node "
         verdict INFO card-numa "$d is on NUMA node $node: pin the MPSS VM's vCPUs and memory there"
         grp=$(basename "$(readlink "/sys/bus/pci/devices/$d/iommu_group" 2>/dev/null)" 2>/dev/null)
         if [ -n "$grp" ] && [ -d "/sys/kernel/iommu_groups/$grp" ]; then
@@ -139,6 +145,41 @@ else
         drv=$(basename "$(readlink "/sys/bus/pci/devices/$d/driver" 2>/dev/null)" 2>/dev/null)
         verdict INFO card-driver "$d bound to: ${drv:-none} (vfio-pci binding is an operator step)"
     done
+fi
+
+# Optional NVIDIA GPU (docs/host-build.md §2a): display (0300) or 3D (0302) class
+if have lspci; then
+    gpus=$(lspci -Dn 2>/dev/null | awk '$3 ~ /^10de:/ && ($2 == "0300:" || $2 == "0302:") {print $1}')
+    if [ -z "$gpus" ]; then
+        verdict INFO gpu "no NVIDIA GPU found (optional)"
+    fi
+    for g in $gpus; do
+        lspci -vvv -s "$g" > "$OUT/gpu-$g.txt" 2>&1
+        verdict INFO gpu "$g $(lspci -s "$g" | cut -d' ' -f2-)"
+        link_verdict gpu-link "$g" "$OUT/gpu-$g.txt"
+        gnode=$(cat "/sys/bus/pci/devices/$g/numa_node" 2>/dev/null || echo "?")
+        same=""
+        case " $card_nodes" in *" $gnode "*) same=yes ;; esac
+        if [ -n "$same" ] && [ "$gnode" != "?" ] && [ "$gnode" != "-1" ]; then
+            verdict INFO gpu-numa "$g on NUMA node $gnode, same as the Xeon Phi: both use that CPU's PCIe lanes; a slot on the other CPU spreads them"
+        else
+            verdict INFO gpu-numa "$g on NUMA node $gnode"
+        fi
+        ggrp=$(basename "$(readlink "/sys/bus/pci/devices/$g/iommu_group" 2>/dev/null)" 2>/dev/null)
+        if [ -n "$ggrp" ] && [ -d "/sys/kernel/iommu_groups/$ggrp" ]; then
+            verdict INFO gpu-iommu "$g IOMMU group $ggrp: $(ls "/sys/kernel/iommu_groups/$ggrp/devices" | tr '\n' ' ')(matters only if the GPU is passed to a VM)"
+        else
+            verdict INFO gpu-iommu "$g has no IOMMU group"
+        fi
+        gdrv=$(basename "$(readlink "/sys/bus/pci/devices/$g/driver" 2>/dev/null)" 2>/dev/null)
+        verdict INFO gpu-driver "$g bound to: ${gdrv:-none}"
+    done
+    if [ -n "$gpus" ] && have nvidia-smi; then
+        log nvidia-smi nvidia-smi -q
+        verdict INFO gpu-power "$(nvidia-smi --query-gpu=name,power.limit,power.max_limit --format=csv,noheader 2>/dev/null | tr '\n' ';') (budget in docs/host-build.md §2a)"
+    elif [ -n "$gpus" ]; then
+        verdict INFO gpu-power "nvidia-smi not installed: power limit not read"
+    fi
 fi
 
 # Benchmark stability

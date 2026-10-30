@@ -176,3 +176,8 @@ needed, the VRM NVM write (and the scan, which needs extra hardware on the
 board) stays an operator procedure, like card flashing, and is never scripted
 in this repository. `mic/host/host-check.sh` (read-only) records the RAPL
 package limits and microcode, together with the passthrough prerequisites.
+The board's original Xeon Silver 4214s are kept as known-good CPUs: the board,
+cards and IOMMU are proven on them before the swap (`docs/host-build.md` §1c);
+no host baseline is taken on them. An optional NVIDIA GPU is reported by the
+host check (never a FAIL) and sized into a 1600 W PSU budget (§2a); GPU
+results, if any, are a separate record family.

@@ -114,14 +114,33 @@ attempts, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
 
 ### 1c. First power-on, in this order
 
-1. One CPU in socket 0, one DIMM per channel of socket 0, BMC on the network.
-   POST, enter the BIOS, record the BIOS version.
-2. Swap the CPUs and repeat, so each 8175M is proven alone (§1a).
-3. Both CPUs, all 12 DIMMs, boot Linux, run `mic/host/host-check.sh`.
-4. A sustained all-core load (for example `stress-ng --cpu 0` for 30 minutes,
+The board comes with two Xeon Silver 4214 (retail Cascade Lake, 85 W). They are
+on Gigabyte's support list, so they are the known-good CPUs: prove the board
+with them before the 8175Ms go in, and keep them afterwards. The thread uses
+supported CPUs the same way, to separate board problems from CPU problems and
+for recovery (a full CMOS/NVRAM clear plus "one boot with known-good CPUs",
+post-488036).
+
+1. **With the 4214s:** both CPUs, all 12 DIMMs, BMC on the network. Enter the
+   BIOS, record the BIOS and BMC versions, and update the BIOS now if needed,
+   while the CPUs are supported ones (an interrupted BIOS update is how the
+   thread's one bricked board died, post-472416). Set VT-x, VT-d and Above 4G
+   Decoding (§3).
+2. Still on the 4214s: boot Linux with the 5110P (and the GPU, §2a)
+   installed, run `mic/host/host-check.sh` and keep that directory. This
+   proves the slots, cards, memory and IOMMU before the CPU swap. These are
+   not host baseline numbers: the baseline is taken on the 8175Ms only.
+3. **Swap to one 8175M** in socket 0 (socket 1 empty, its DIMMs out per the
+   manual). POST, check the BIOS sees it. Repeat with the other 8175M, so each
+   is proven alone (§1a).
+4. Both 8175Ms, all 12 DIMMs: boot, run `host-check.sh` again.
+5. A sustained all-core load (for example `stress-ng --cpu 0` for 30 minutes,
    then an AVX-512 load) while watching both package temperatures, VRM
    temperatures (BMC) and wall power. The thread's stability recipe was
    memtest86 with ECC, then 24 h of stress-ng with `rasdaemon` (post-446806).
+
+If an 8175M does not start but the 4214s do, go back to §1a (CPU condition,
+socket) before considering §1b.
 
 ## 2. Parts checklist
 
@@ -134,10 +153,41 @@ attempts, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
 | Cooling (card) | directed front-to-back airflow through the 5110P's heatsink: server chassis or a shroud plus a high-static-pressure fan | the 5110P is passive, 225 W |
 | Cooling (CPUs) | LGA3647 coolers for the board's narrow/square ILM type (check the manual), rated for 240 W; the second cooler must not breathe the first one's exhaust, or use liquid cooling | the thread's most repeated warning for dual 240 W builds (§1a) |
 | Cooling (VRMs) | the board's VRM heatsinks present; a fan over them in a tower case | server boards expect chassis airflow (§1a) |
-| Power supply | 2 × 240 W CPUs + 225 W card + rest; roughly 1000 W or more of quality PSU, with the PCIe auxiliary connectors the card needs and both CPU EPS connectors | forum reports: ~180 W per 8175M without AVX, ~520–600 W for a dual high-TDC system under full load (§1a) |
+| Power supply | 2 × 240 W CPUs + 225 W card + rest; roughly 1000 W or more of quality PSU (**1600 W with the GPU**, §2a), with the PCIe auxiliary connectors the card needs and both CPU EPS connectors | forum reports: ~180 W per 8175M without AVX, ~520–600 W for a dual high-TDC system under full load (§1a) |
 | Management | the board's BMC (remote console, power cycle) on the network | resetting a wedged card needs a power cycle; essential for `docs/kernel-port.md` work |
 | Storage | an SSD for the host OS and VM images (60 GB per MPSS VM) | |
 | Host OS | a current Linux with KVM, QEMU, libvirt, pciutils, numactl, dmidecode | |
+
+### 2a. Optional NVIDIA GPU (Tesla T40)
+
+**Which card it is: UNVERIFIED.** NVIDIA's public Tesla lineup has a T4 but no
+T40. Cards sold as "Tesla T40" are reported to be 24 GB TU102 (Titan RTX
+class) parts, which would put them near **260 W**; if it is in fact a T4, it is
+**70 W** and slot-powered. Read the label, or `nvidia-smi -q` (the host check
+logs it), and record which one it is.
+
+| item | requirement |
+|------|-------------|
+| Slot | electrically x16, full length, double width. Prefer a slot on the **other CPU** from the 5110P (manual block diagram); the host check reports both cards' NUMA nodes (`card-numa`, `gpu-numa`). Do not put the two passive cards in adjacent slots. |
+| Power connector | Tesla data-centre cards usually take an 8-pin **CPU/EPS** plug, not PCIe 8-pin (**UNVERIFIED** for this card: read the label at its power socket). A PCIe cable in an EPS socket can damage the card. |
+| Cooling | passive, like the 5110P: forced front-to-back airflow through both cards. |
+| Use | host-side only unless decided otherwise; it is not part of the KNC measurements. GPU results are a separate record family and never compared as "MIC". |
+
+**Power budget** (BELIEF, from ratings and the forum figures in §1a):
+
+| part | sustained | short peaks |
+|------|-----------|-------------|
+| 2× 8175M (240 W TDP; PL2 up to about 288 W) | 480 W | ~575 W |
+| Xeon Phi 5110P | 225 W | 225 W |
+| GPU, if ~260 W (T4: 70 W) | 260 W | ~260 W |
+| board, BMC, 12 DIMMs, SSDs, fans | 100–150 W | ~150 W |
+| **total** | **~1,065–1,115 W** | **~1,210 W** |
+
+PSU: **1600 W**, 80 PLUS Platinum or Titanium, modular, with enough EPS
+outputs for the board's CPU inputs plus the GPU, and the 8-pin + 6-pin PCIe
+the 5110P needs. With a T4 instead, 1300 W is enough. At the wall the machine
+can draw about 1.3 kW: on a 120 V / 15 A circuit (about 1,440 W continuous)
+give it its own circuit.
 
 ## 3. BIOS settings (operator)
 
@@ -171,6 +221,7 @@ Read-only. It writes `results/hw/host-<timestamp>/` with raw logs and
 | `card-numa` | INFO: the NUMA node to pin the MPSS VM to |
 | `governor`, `turbo`, `smt`, `cpu-power` | recorded; governor `performance` for benchmarks; package power limits shown in watts |
 | `memory` | 12 DIMMs populated on a 2-socket system (needs root + dmidecode) |
+| `gpu`, `gpu-link`, `gpu-numa`, `gpu-iommu`, `gpu-driver`, `gpu-power` | optional NVIDIA GPU: never a FAIL; link x16 expected; power limit via `nvidia-smi` if installed |
 | `qemu`, `libvirt` | installed |
 
 Paste `SUMMARY.txt` back for review.
