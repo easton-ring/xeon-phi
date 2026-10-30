@@ -5,75 +5,123 @@ The bare-metal host has two jobs: it runs the host benchmark baseline
 passed through (`docs/qemu-passthrough.md`). Nothing here has been built or
 tested yet.
 
-Labels follow `docs/mpss-compatibility.md`: **SOURCED** (URL given; read as
-search excerpts, the Gigabyte manual PDF could not be downloaded from the
-authoring environment), **BELIEF**, **UNVERIFIED**.
+Labels follow `docs/mpss-compatibility.md`: **SOURCED** (URL given),
+**BELIEF**, **UNVERIFIED**, **UNKNOWN**. The Gigabyte manual PDF could not be
+downloaded from the authoring environment.
 
 ## 1. Resolve first: 8175M on this board
 
+Source for most of this section: the ServeTheHome thread "VRM modify ICC_MAX
+to run high Current/TDP OEM processors"
+(<https://forums.servethehome.com/index.php?threads/vrm-modify-icc_max-to-run-high-tdc-oem-cpu.38686/>),
+**read in full**: all 63 pages, 1,249 posts, 2023-01-08 to 2026-10-07. Post
+links below are `…/post-<id>` under that thread URL. These are forum reports,
+mostly from the thread's author RolloZ170, and nobody in the thread posts an
+MD71-HB0 test log, so they are labelled **SOURCED (forum)**, not PRIMARY.
+
+Why the board matters at all: the platform firmware (ME/SPS in the PCH) reads
+the VRM controller's ICC_MAX and compares it with the CPU's TDC. If ICC_MAX is
+lower, "the CPU is helt in reset" and "no x86 code is executed"
+(post-393799, post-454916). Retail 165–205 W SKUs have TDC 228 A; the OEM
+parts above 205 W, the 8175M among them, have TDC 255 A (post-388512,
+post-400615). So the question is the board's factory ICC_MAX, not its TDP
+rating.
+
 | item | status | detail |
 |------|--------|--------|
-| Board CPU power rating | SOURCED (retailers) | MD71-HB0: dual LGA3647, Intel C622, "TDP 205W max" per socket (<https://www.serverdirect.nl/en/components/motherboards/intel/2-processors/md71-hb0/33725>). Check the CPU support list and manual on Gigabyte's page (<https://www.gigabyte.com/Server-Motherboard/MD71-HB0-rev-1x>). |
-| 8175M TDP | SOURCED (sellers only) | 240 W per most listings, one says 165 W. It is an OEM (AWS) part with no Intel ARK page, so there is no official figure. |
-| 8175M on the MD71-HB0 | **UNVERIFIED** | No source found for this pairing. OEM parts are not on retail CPU support lists. |
-| 8175M on other boards | SOURCED (anecdotal, both directions) | Works on a Microsoft MtOlympus C2012 with a Skylake-only BIOS, "240W TDP / 255A TDC is no problem" (<https://forums.servethehome.com/index.php?threads/xeon-8259cl.33334/>). Boot halt with a catastrophic error on a Supermicro X11SPi-TF; the poster suspected an ME-region check (<https://winraid.level1techs.com/t/asus-c621e-sage-and-modern-xeons-like-8170-8280-8222cl-8259cl-8171m-etc/37502>). |
-| Board status | SOURCED | Gigabyte lists the MD71-HB0 as end of support (product page above), so expect no new BIOS releases. |
-| ServeTheHome method for high-current OEM CPUs | SOURCED (see §1a) | Thread "VRM modify ICC_MAX to run high Current/TDP OEM processors" (<https://forums.servethehome.com/index.php?threads/vrm-modify-icc_max-to-run-high-tdc-oem-cpu.38686/>): raise the board's VRM current limit (ICC_MAX). |
+| 8175M TDC / TDP | SOURCED (forum) | "8175M TDC=255A" (post-388512); "TDC=255A,TDP=240W" (post-472248). OEM (AWS) part, no Intel ARK page. |
+| **8175M on the MD71-HB0** | **SOURCED (forum)** | RolloZ170, 2025-07-01: "MD71-HB0 supports OEM high TDC CPU out of the Box, e.g. Platinum P-8124 (SKL B1 TDC=255A,TDP=240W)" and "MD71-HB0 usualy runs dual Platinum 8175M (TDC=255A,TDP=240W)" (post-472248). Earlier: Gigabyte "MU71/MD71 boards with nearly the same VRM config.(5+1) allow ICC_MAX=255A by default" (post-366054). "if the factory ICC_MAX is 255A, you do NOT need the mod. any 'C' OEM or 8175M/8124M will work" (post-482664). |
+| VRM heatsink | SOURCED (forum) | The MD71-HB1 "comes without VRM heatsink, i guess the reason for lower TDP support"; to run high-TDC CPUs on it "you need to install the VRM heatsinks" (post-472248). The HB0 is the variant with them: check they are present on a used board. |
+| BIOS / microcode | SOURCED (forum) | "B1 is only supported out of the box by gigabyte" (post-447369): Gigabyte BIOSes carry the Skylake B1 microcode (CPUID 50653) the P-8124 needs. Not an 8175M requirement (on Dell the advice was "Platinum 8124(M) or 8175M will work", post-447361), but it shows the BIOS is not limited to the retail list. |
+| Retail "205 W" rating | SOURCED (retailers) | "TDP 205W max" per socket (<https://www.serverdirect.nl/en/components/motherboards/intel/2-processors/md71-hb0/33725>). The thread's reading: boards rated 205 W "usualy do not block TDP, but TDC instead" (post-485294), and the MD71 TDC limit is already 255 A. |
+| Board status | SOURCED | Gigabyte lists the MD71-HB0 as end of support (<https://www.gigabyte.com/Server-Motherboard/MD71-HB0-rev-1x>): no new BIOS releases. |
+| MD71-HB0 VRM controller, I2C address, header | **UNKNOWN** | Not stated anywhere in the thread. Only needed if the mod ever is (§1b). |
 
-What a 240 W CPU on a 205 W-rated board can mean (BELIEF): the board may
-refuse to power the CPU on, or it boots and the firmware caps the package
-power. The host check records the package power limit the BIOS applies (RAPL)
-in `cpu-power`, and a lower cap shows up as lower all-core clocks in the host
-baseline. A capped run is still a valid baseline as long as the cap is recorded.
+**Conclusion (BELIEF, from the sources above):** expect the MD71-HB0 to boot
+dual 8175M **without the ICC_MAX modification**. Plan the build that way; the
+remaining risks are the ones in §1a. If a CPU does not start (no POST, the
+board keeps resetting), see §1b before anything else.
 
-### 1a. The ICC_MAX modification (operator only, never scripted here)
+### 1a. What the thread says actually goes wrong with 8175M builds
 
-Sources: the ServeTheHome thread above (read only as search excerpts:
-`forums.servethehome.com` is not reachable from the authoring environment), and
-the source code of its Python port, `stephensolis/vrm-iccmax`
-(<https://github.com/stephensolis/vrm-iccmax>, read in full at commit `12e717c`,
-2026-10-15). The original tool is RolloZ170's `MCP2221a_iccmax_FF`, linked in
-the thread.
+These are the reports that apply to this build, independent of the mod:
 
-**What it does** (from the port's code):
-- talks to the CPU VRM controllers over PMBus through an **MCP2221A USB-I2C
-  adapter** connected to the board's I2C/PMBus;
-- `scan` identifies controllers, read-only;
-- `set` writes **ICC_MAX = 255 A** (0xFF, the register's maximum) and
-  **commits it to the controller's non-volatile memory**, so it survives power
-  cycles. It has a dry run (`-n`) and asks for confirmation per controller;
-- supported controllers: **PXE1610C, MP2955A, TPS53679, TPS53678**. The author
-  tested only the PXE1610C on hardware. It recognises the ISL69127 but cannot
-  modify it. PXE1610C NVM has a limited write counter, which the tool reads and
-  reports;
-- stated purpose: **210 W** 2nd-gen OEM CPUs (8259CL, 8272CL) on boards
-  limited to 205 W.
+| risk | source | what to do |
+|------|--------|------------|
+| **Worn-out or faulty used CPUs.** An HP ML350 Gen10 with 2× 8175M had a missing GPU, blue screens, SSD drop-outs; cause: "one of, or both of the CPU's are faulty". "cheap used ones are worn out" | post-455702, post-455709 | Buy from a seller that accepts returns; test **each CPU alone** in socket 0 first; check both report the same stepping and microcode (`lscpu`, host check `microcode` log) (post-455712). |
+| **Socket installation.** Same report: "sound real ylike bad socket install"; bent socket pins caused second-CPU errors on another ML350 | post-455702, post-452888, post-454063 | Torque the heatsink screws to the stated 1.2–1.3 N·m ("click") in the order printed on the cooler; make sure the leaf springs touch the cooler (post-455708). Inspect both sockets under light before fitting. |
+| **Second CPU gets the first one's hot air.** "second gets hot air from first, cooling is your problem(water)"; "dual 240W CPU makes no sense, not enough place for cooler(except Water)"; the second CPU ran "+10~15C hotter" in a Dell T7920 | post-481427, post-394817, post-443379 | The MD71-HB0 sockets are in line (BELIEF from board photos; check). Use coolers whose airflow does not pass through the other cooler (90° orientation or a side-by-side duct), or liquid cooling. Watch both package temperatures under the all-core load (§1c). |
+| **VRM cooling.** "keep the VRM's cool"; server boards without airflow need "proper cooling" in a desktop case | post-475105, post-469933, post-469944 | The VRM heatsinks expect server airflow: put a fan on them in a desktop/tower case and read VRM temperatures from the BMC under load. |
+| **Real power draw.** "one 8175M takes usualy 180W(non AVX)"; a user expected about 520 W at the wall for two 8175M under AVX-512; dual 8259CL in a T7920: "Full load total system power draw ~600W" | post-451575, post-451576, post-442809 | PSU: 2× 240 W CPUs + 225 W 5110P + board, memory, fans; keep ≥ 1000 W of quality PSU (§2). |
+| **Board power cap.** On another OEM board the "TDP of the whole machine is limited to 350W" after the CPUs ran; fixed by BMC power control "OScontrol" | post-451564, post-451598, post-451607 | The host check records the RAPL package limits (`cpu-power`). If they are below 240 W, look in the BIOS and BMC power settings and record what you change. |
+| **Low clocks.** "supermicro's default settings follow intels rules": low all-core clocks fixed with the maximum PL1 time window; another board needed a BIOS reset | post-409766, post-409769, post-493806 | Record PL1/PL2/time window with every host run; do not tune them between runs. |
+| **Microcode and mitigations.** Newer microcode "can cause" low clocks; one BIOS with the Downfall fix was called a possible "performance killer" | post-409809, post-408154 | Record the BIOS version and microcode (`host-check.sh` logs `microcode`) with every result. |
 
-**How it applies to this build:**
+The 8175M is not soldered: "only thermal paste between cpu and IHS"
+(post-437156). That is a statement about thermals, not an invitation to delid.
 
-| question | status |
-|----------|--------|
-| Which VRM controller the MD71-HB0 uses | **UNKNOWN.** If it is not one of the four supported controllers, the tool cannot help. Find out first: board photos (the controller is near the CPU sockets), the forum thread, or `scan` mode on the built board (read-only). |
-| Where the adapter connects on this board | **UNKNOWN.** Depends on the board's PMBus/I2C wiring; look for MD71-HB0 reports in the thread. |
-| Whether 255 A is enough for the 8175M | SOURCED, anecdotal: the STH "Xeon 8259CL" thread reports the 8175M working at "240W TDP / 255A TDC" on a different board. The port itself targets 210 W parts, so the 8175M is a larger step above the board's 205 W design. |
-| VRM thermals | BELIEF: a VRM designed for 205 W runs hotter at 240 W. Cool the VRMs directly and watch their temperature through the BMC under an all-core load. |
+### 1b. If the mod is ever needed (operator only, never scripted here)
 
-**Risks** (BELIEF, plus what the code shows): the write is permanent; writing
-the wrong controller or address can disable a CPU rail and possibly the board;
-the board is end of support (no BIOS fixes); warranty is void. Use the
-dry run and `scan` first, and keep a record of the original ICC_MAX values the
-tool prints, so they can be restored.
+Only if a CPU stays in reset on this board, contradicting §1. First rule out
+§1a (bad CPU, socket, BIOS settings): "IF you get a POST code a VRM mod is not
+required. you have other issue" (post-442918).
+
+The method, from the thread and from the source of its Python port
+`stephensolis/vrm-iccmax` (<https://github.com/stephensolis/vrm-iccmax>, read in
+full at commit `12e717c`):
+
+- An **MCP2221A** USB–I2C board (Adafruit 4471; "old MCP2221 not work",
+  post-444758) on the board's VRM PMBus, with RolloZ170's command-line tool
+  `MCP2221a_iccmax_FF` (linked in the thread's first posts) or the Python port.
+- `-scan 10 7F` lists the controllers it finds and **prints their current
+  ICC_MAX** (read-only). `ICC_MAX= FF` means 255 A already, so nothing to do;
+  `E4` is the 228 A retail default (post-493854, post-505597).
+- The write sets ICC_MAX to 255 A and stores it in the controller's
+  non-volatile memory. Supported controllers: PXE1610C, MP2955A, TPS53679,
+  TPS53678; others (Renesas ISL69127, Infineon IR35215, MAX16500) need vendor
+  tools and dongles.
+- Each socket has its own controller and both must be written; a controller
+  is often only alive with a CPU in its socket and the board powered
+  (post-437527, post-455661).
+
+Risks reported in the thread:
+
+- **PXE1610C NVM can be written 14 times** ("only 14 times(OPT2)",
+  post-455702; scan shows "remaining attempts= 0D", post-505597). Every write
+  and every restore spends one; there is no undo command.
+- **A broken connection mid-write can write the wrong place**: the
+  controllers' page register is shared with the BMC and PCH, which also talk
+  on that bus (post-455917, post-455926, post-487973). Recovery then needs vendor
+  software and dongles (Infineon PowerCode with a PX-DNGL-01).
+- **Dead adapters and damage from ground loops**: a laptop on a 2-pin AC
+  adapter can sit ~100 V AC from the server ground and destroyed several
+  dongles (post-508832 and post-498660, post-499804). Connect ground first.
+- **Writing a RAM or chipset VRM** instead of a CPU VRM: scans also find
+  those (post-489728, post-485701).
+- **ESD and soldering**: some boards have no header and need wires soldered
+  to series resistors (post-426018, post-426130).
+- **A bricked board** in the thread (Dell T7820, post-472416) came from an
+  interrupted BIOS update during the work, not the ICC_MAX write; Dell's ME
+  region is bound to the PCH, so a dump from another board did not help.
+- What the mod does not change: "the per phase OCP is left unchanged"
+  (post-366054); "change ICC_MAX just allows to start" (post-410087).
 
 **Project rule:** like card flashing (`micflash`), this repository never
-contains a script that writes VRM NVM. It is an operator decision and an
-operator procedure. Record what was done (controller, address, old and new
-values, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
+contains a script that writes VRM NVM, and it does not script the scan either
+(it needs extra hardware wired to the board). Both are operator procedures.
+Record anything done (controller, address, old and new values, remaining
+attempts, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
 
-**Alternatives that avoid the modification:**
-- CPUs at or below 205 W that are on the MD71-HB0's CPU support list (retail
-  1st/2nd-gen Xeon Scalable; check each SKU's TDP and the list);
-- a board known to accept 255 A by default (the thread reports that some
-  boards already allow 255 A).
+### 1c. First power-on, in this order
+
+1. One CPU in socket 0, one DIMM per channel of socket 0, BMC on the network.
+   POST, enter the BIOS, record the BIOS version.
+2. Swap the CPUs and repeat, so each 8175M is proven alone (§1a).
+3. Both CPUs, all 12 DIMMs, boot Linux, run `mic/host/host-check.sh`.
+4. A sustained all-core load (for example `stress-ng --cpu 0` for 30 minutes,
+   then an AVX-512 load) while watching both package temperatures, VRM
+   temperatures (BMC) and wall power. The thread's stability recipe was
+   memtest86 with ECC, then 24 h of stress-ng with `rasdaemon` (post-446806).
 
 ## 2. Parts checklist
 
@@ -81,11 +129,12 @@ values, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
 |------|-------------|-----|
 | Board | MD71-HB0: confirm in the manual that the BIOS has **VT-d**, **Above 4G Decoding** and SR-IOV/ARI options; identify which PCIe slots are wired to CPU0 vs CPU1 (block diagram) | passthrough needs VT-d; the 5110P's 8 GB BAR0 needs Above 4G decoding (`docs/qemu-passthrough.md`) |
 | Slot for the 5110P | electrically **x16**, attached to a populated CPU, room for a full-length double-width card | a narrower link slows host↔card transfers (offload, deploy) |
-| CPUs | 2× 8175M, only after §1 is resolved | |
+| CPUs | 2× 8175M; the board's factory ICC_MAX is reported as 255 A (§1) | used parts: buy where returns are possible, test each alone (§1a) |
 | Memory | DDR4 ECC RDIMM, **one DIMM in each of the 6 channels per socket (12 DIMMs)**, same size and speed; the board has 16 slots, so follow the manual's population order. 64–128 GB total | an unbalanced or partly filled layout starves the host baseline of memory bandwidth |
 | Cooling (card) | directed front-to-back airflow through the 5110P's heatsink: server chassis or a shroud plus a high-static-pressure fan | the 5110P is passive, 225 W |
-| Cooling (CPUs) | LGA3647 coolers for the board's narrow/square ILM type (check the manual), rated for the CPUs' real power | |
-| Power supply | 2 × CPU power + 225 W card + rest; roughly 1000 W or more of quality PSU, with the PCIe auxiliary connectors the card needs and both CPU EPS connectors | |
+| Cooling (CPUs) | LGA3647 coolers for the board's narrow/square ILM type (check the manual), rated for 240 W; the second cooler must not breathe the first one's exhaust, or use liquid cooling | the thread's most repeated warning for dual 240 W builds (§1a) |
+| Cooling (VRMs) | the board's VRM heatsinks present; a fan over them in a tower case | server boards expect chassis airflow (§1a) |
+| Power supply | 2 × 240 W CPUs + 225 W card + rest; roughly 1000 W or more of quality PSU, with the PCIe auxiliary connectors the card needs and both CPU EPS connectors | forum reports: ~180 W per 8175M without AVX, ~520–600 W for a dual high-TDC system under full load (§1a) |
 | Management | the board's BMC (remote console, power cycle) on the network | resetting a wedged card needs a power cycle; essential for `docs/kernel-port.md` work |
 | Storage | an SSD for the host OS and VM images (60 GB per MPSS VM) | |
 | Host OS | a current Linux with KVM, QEMU, libvirt, pciutils, numactl, dmidecode | |
@@ -95,7 +144,9 @@ values, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
 - Intel VT-x and VT-d: on.
 - Above 4G Decoding (64-bit MMIO): on.
 - SR-IOV / ARI: on if offered (harmless; some boards tie large-BAR handling to them).
-- CPU power settings: per the ServeTheHome guide (§1).
+- CPU power settings: leave PL1/PL2/time window at the BIOS defaults for the
+  first runs; record them with every result. If RAPL shows a package limit
+  below 240 W, the BIOS or BMC power settings are the place to look (§1a).
 - For benchmark runs: note the turbo setting; do not change it between host runs.
 
 Kernel command line (operator, bootloader config): `intel_iommu=on iommu=pt`.

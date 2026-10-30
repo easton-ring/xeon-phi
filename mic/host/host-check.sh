@@ -161,7 +161,7 @@ fi
 [ -r /sys/devices/system/cpu/smt/active ] && verdict INFO smt "smt active=$(cat /sys/devices/system/cpu/smt/active)"
 rapl=$(grep -c 'package' "$OUT/rapl.txt" 2>/dev/null)
 if [ "${rapl:-0}" -gt 0 ]; then
-    verdict INFO cpu-power "package power limits (W): $(grep package "$OUT/rapl.txt" | sed -n 's/.*limit0_uw=\([0-9]*\).*/\1/p' | awk '{printf "%.0f ", $1/1e6}') (compare with the board's 205 W rating, docs/host-build.md)"
+    verdict INFO cpu-power "package power limits (W): $(grep package "$OUT/rapl.txt" | sed -n 's/.*limit0_uw=\([0-9]*\).*/\1/p' | awk '{printf "%.0f ", $1/1e6}') (8175M TDP is 240 W; a lower limit caps the host baseline, docs/host-build.md §1a)"
 else
     verdict INFO cpu-power "RAPL not readable"
 fi

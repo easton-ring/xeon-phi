@@ -165,12 +165,14 @@ made a host object read as K1OM. The probe, the native Makefile and
 
 **D-26 Lab host: dual Xeon Platinum 8175M on a Gigabyte MD71-HB0.** One
 machine serves both as the bare-metal host baseline and as the passthrough
-host for the MPSS VM. Open risk recorded in `docs/host-build.md`: the 8175M
-is an OEM part listed at 240 W by sellers, the board is rated 205 W per socket
-by retailers, and no source confirms this pairing. The ServeTheHome route is
-raising the VRM's ICC_MAX to 255 A in its NVM (RolloZ170's tool, Python port
-`stephensolis/vrm-iccmax`); it depends on the board's VRM controller being one
-of four supported models, which is unknown for the MD71-HB0. Like card flashing,
-that write is an operator procedure and is never scripted in this repository.
-`mic/host/host-check.sh` (read-only) records the power limit the BIOS applies,
-together with the passthrough prerequisites.
+host for the MPSS VM. The 8175M is an OEM part (TDC 255 A, TDP 240 W); retail
+listings rate the board at 205 W per socket. The full ServeTheHome ICC_MAX
+thread (63 pages, read end to end) reports that the MD71-HB0 ships with
+ICC_MAX = 255 A and "usualy runs dual Platinum 8175M", so the build plans for
+**no VRM modification**. The open risks are used-CPU condition, socket
+installation, cooling of two in-line 240 W CPUs and their VRMs, and power
+limits applied by BIOS or BMC (`docs/host-build.md` §1a). If the mod is ever
+needed, the VRM NVM write (and the scan, which needs extra hardware on the
+board) stays an operator procedure, like card flashing, and is never scripted
+in this repository. `mic/host/host-check.sh` (read-only) records the RAPL
+package limits and microcode, together with the passthrough prerequisites.
