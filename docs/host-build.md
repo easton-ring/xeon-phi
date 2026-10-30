@@ -18,14 +18,62 @@ authoring environment), **BELIEF**, **UNVERIFIED**.
 | 8175M on the MD71-HB0 | **UNVERIFIED** | No source found for this pairing. OEM parts are not on retail CPU support lists. |
 | 8175M on other boards | SOURCED (anecdotal, both directions) | Works on a Microsoft MtOlympus C2012 with a Skylake-only BIOS, "240W TDP / 255A TDC is no problem" (<https://forums.servethehome.com/index.php?threads/xeon-8259cl.33334/>). Boot halt with a catastrophic error on a Supermicro X11SPi-TF; the poster suspected an ME-region check (<https://winraid.level1techs.com/t/asus-c621e-sage-and-modern-xeons-like-8170-8280-8222cl-8259cl-8171m-etc/37502>). |
 | Board status | SOURCED | Gigabyte lists the MD71-HB0 as end of support (product page above), so expect no new BIOS releases. |
-| ServeTheHome guide for running the 8175M | **to add** | The owner reports an STH forum guide that explains exactly how to get the 8175M running. Add its URL and the steps (BIOS version, settings, power limits) here before buying. |
+| ServeTheHome method for high-current OEM CPUs | SOURCED (see §1a) | Thread "VRM modify ICC_MAX to run high Current/TDP OEM processors" (<https://forums.servethehome.com/index.php?threads/vrm-modify-icc_max-to-run-high-tdc-oem-cpu.38686/>): raise the board's VRM current limit (ICC_MAX). |
 
-What a 240 W CPU on a 205 W-rated board can mean (BELIEF, to be checked
-against the guide and the board): the BIOS may not boot it at all, or it boots
-and the firmware caps the package power. The host check records the package
-power limit the BIOS applies (RAPL) in `cpu-power`, and a lower cap shows up as
-lower all-core clocks in the host baseline. A capped run is still a valid
-baseline as long as the cap is recorded.
+What a 240 W CPU on a 205 W-rated board can mean (BELIEF): the board may
+refuse to power the CPU on, or it boots and the firmware caps the package
+power. The host check records the package power limit the BIOS applies (RAPL)
+in `cpu-power`, and a lower cap shows up as lower all-core clocks in the host
+baseline. A capped run is still a valid baseline as long as the cap is recorded.
+
+### 1a. The ICC_MAX modification (operator only, never scripted here)
+
+Sources: the ServeTheHome thread above (read only as search excerpts:
+`forums.servethehome.com` is not reachable from the authoring environment), and
+the source code of its Python port, `stephensolis/vrm-iccmax`
+(<https://github.com/stephensolis/vrm-iccmax>, read in full at commit `12e717c`,
+2026-10-15). The original tool is RolloZ170's `MCP2221a_iccmax_FF`, linked in
+the thread.
+
+**What it does** (from the port's code):
+- talks to the CPU VRM controllers over PMBus through an **MCP2221A USB-I2C
+  adapter** connected to the board's I2C/PMBus;
+- `scan` identifies controllers, read-only;
+- `set` writes **ICC_MAX = 255 A** (0xFF, the register's maximum) and
+  **commits it to the controller's non-volatile memory**, so it survives power
+  cycles. It has a dry run (`-n`) and asks for confirmation per controller;
+- supported controllers: **PXE1610C, MP2955A, TPS53679, TPS53678**. The author
+  tested only the PXE1610C on hardware. It recognises the ISL69127 but cannot
+  modify it. PXE1610C NVM has a limited write counter, which the tool reads and
+  reports;
+- stated purpose: **210 W** 2nd-gen OEM CPUs (8259CL, 8272CL) on boards
+  limited to 205 W.
+
+**How it applies to this build:**
+
+| question | status |
+|----------|--------|
+| Which VRM controller the MD71-HB0 uses | **UNKNOWN.** If it is not one of the four supported controllers, the tool cannot help. Find out first: board photos (the controller is near the CPU sockets), the forum thread, or `scan` mode on the built board (read-only). |
+| Where the adapter connects on this board | **UNKNOWN.** Depends on the board's PMBus/I2C wiring; look for MD71-HB0 reports in the thread. |
+| Whether 255 A is enough for the 8175M | SOURCED, anecdotal: the STH "Xeon 8259CL" thread reports the 8175M working at "240W TDP / 255A TDC" on a different board. The port itself targets 210 W parts, so the 8175M is a larger step above the board's 205 W design. |
+| VRM thermals | BELIEF: a VRM designed for 205 W runs hotter at 240 W. Cool the VRMs directly and watch their temperature through the BMC under an all-core load. |
+
+**Risks** (BELIEF, plus what the code shows): the write is permanent; writing
+the wrong controller or address can disable a CPU rail and possibly the board;
+the board is end of support (no BIOS fixes); warranty is void. Use the
+dry run and `scan` first, and keep a record of the original ICC_MAX values the
+tool prints, so they can be restored.
+
+**Project rule:** like card flashing (`micflash`), this repository never
+contains a script that writes VRM NVM. It is an operator decision and an
+operator procedure. Record what was done (controller, address, old and new
+values, tool version) in `results/hw/host-<date>/vrm-iccmax.txt`.
+
+**Alternatives that avoid the modification:**
+- CPUs at or below 205 W that are on the MD71-HB0's CPU support list (retail
+  1st/2nd-gen Xeon Scalable; check each SKU's TDP and the list);
+- a board known to accept 255 A by default (the thread reports that some
+  boards already allow 255 A).
 
 ## 2. Parts checklist
 

@@ -167,6 +167,10 @@ made a host object read as K1OM. The probe, the native Makefile and
 machine serves both as the bare-metal host baseline and as the passthrough
 host for the MPSS VM. Open risk recorded in `docs/host-build.md`: the 8175M
 is an OEM part listed at 240 W by sellers, the board is rated 205 W per socket
-by retailers, and no source confirms this pairing. `mic/host/host-check.sh`
-(read-only) records the power limit the BIOS applies, together with the
-passthrough prerequisites.
+by retailers, and no source confirms this pairing. The ServeTheHome route is
+raising the VRM's ICC_MAX to 255 A in its NVM (RolloZ170's tool, Python port
+`stephensolis/vrm-iccmax`); it depends on the board's VRM controller being one
+of four supported models, which is unknown for the MD71-HB0. Like card flashing,
+that write is an operator procedure and is never scripted in this repository.
+`mic/host/host-check.sh` (read-only) records the power limit the BIOS applies,
+together with the passthrough prerequisites.
