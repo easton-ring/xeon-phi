@@ -162,3 +162,26 @@ reads `e_machine` (181 = EM_K1OM) with `od`. The earlier probe grepped `file`
 and `objdump` output, which includes the file name; names containing "k1om"
 made a host object read as K1OM. The probe, the native Makefile and
 `deploy.sh` all use the header check; `selftest.sh` guards against regressions.
+
+**D-26 Lab host: dual Xeon Platinum 8175M on a Gigabyte MD71-HB0.** One
+machine serves both as the bare-metal host baseline and as the passthrough
+host for the MPSS VM. The 8175M is an OEM part (TDC 255 A, TDP 240 W); retail
+listings rate the board at 205 W per socket. The full ServeTheHome ICC_MAX
+thread (63 pages, read end to end) reports that the MD71-HB0 ships with
+ICC_MAX = 255 A and "usualy runs dual Platinum 8175M", so the build plans for
+**no VRM modification**. The open risks are used-CPU condition, socket
+installation, cooling of two in-line 240 W CPUs and their VRMs, and power
+limits applied by BIOS or BMC (`docs/host-build.md` §1a). If the mod is ever
+needed, the VRM NVM write (and the scan, which needs extra hardware on the
+board) stays an operator procedure, like card flashing, and is never scripted
+in this repository. `mic/host/host-check.sh` (read-only) records the RAPL
+package limits and microcode, together with the passthrough prerequisites.
+The board's original Xeon Silver 4214s are kept as known-good CPUs: the board,
+cards and IOMMU are proven on them before the swap (`docs/host-build.md` §1c);
+no host baseline is taken on them. Bring-up runs in four stages, each ending
+with something working: board on the 4214s, the 8175Ms, the GPU, then the Phi
+(§1c). Memory: 12 DIMMs, CPU0 six identical 8 GB for the baseline, CPU1 mixed
+(§2b). Chassis: an open steel bench with ducted fans on the passive cards
+(§2c); PSU: Corsair HX1500i. An optional NVIDIA GPU is reported by the
+host check (never a FAIL) and sized into a 1600 W PSU budget (§2a); GPU
+results, if any, are a separate record family.
