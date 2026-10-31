@@ -121,23 +121,31 @@ supported CPUs the same way, to separate board problems from CPU problems and
 for recovery (a full CMOS/NVRAM clear plus "one boot with known-good CPUs",
 post-488036).
 
-1. **With the 4214s:** both CPUs, all 12 DIMMs, BMC on the network. Enter the
-   BIOS, record the BIOS and BMC versions, and update the BIOS now if needed,
-   while the CPUs are supported ones (an interrupted BIOS update is how the
-   thread's one bricked board died, post-472416). Set VT-x, VT-d and Above 4G
-   Decoding (§3).
-2. Still on the 4214s: boot Linux with the 5110P (and the GPU, §2a)
-   installed, run `mic/host/host-check.sh` and keep that directory. This
-   proves the slots, cards, memory and IOMMU before the CPU swap. These are
-   not host baseline numbers: the baseline is taken on the 8175Ms only.
-3. **Swap to one 8175M** in socket 0 (socket 1 empty, its DIMMs out per the
-   manual). POST, check the BIOS sees it. Repeat with the other 8175M, so each
-   is proven alone (§1a).
-4. Both 8175Ms, all 12 DIMMs: boot, run `host-check.sh` again.
-5. A sustained all-core load (for example `stress-ng --cpu 0` for 30 minutes,
+Each stage ends with something working, so the uncertain part (the Phi)
+comes last:
+
+1. **Board with the 4214s.** Both CPUs, all 12 DIMMs (§2b), BMC on its own
+   network. Enter the BIOS, record the BIOS and BMC versions, and update both
+   now if needed, while the CPUs are supported ones (an interrupted BIOS update
+   is how the thread's one bricked board died, post-472416). Set VT-x, VT-d and
+   Above 4G Decoding (§3). Boot the host OS and run `mic/host/host-check.sh`
+   with the 5110P and the GPU installed; keep that directory. This proves the
+   slots, cards, memory and IOMMU before the CPU swap. These are not host
+   baseline numbers: the baseline is taken on the 8175Ms only.
+2. **The 8175Ms.** One in socket 0 (socket 1 empty, its DIMMs out per the
+   manual): POST, check the BIOS sees it. Repeat with the other one, so each is
+   proven alone (§1a). Then both, all 12 DIMMs, `host-check.sh` again. Then a
+   sustained all-core load (for example `stress-ng --cpu 0` for 30 minutes,
    then an AVX-512 load) while watching both package temperatures, VRM
-   temperatures (BMC) and wall power. The thread's stability recipe was
-   memtest86 with ECC, then 24 h of stress-ng with `rasdaemon` (post-446806).
+   temperatures (BMC), card temperatures (§2c) and wall power (§2). The
+   thread's stability recipe was memtest86 with ECC, then 24 h of stress-ng
+   with `rasdaemon` (post-446806).
+3. **The GPU** (§2a). Install the NVIDIA driver on the host; `nvidia-smi`
+   shows whether the card is recognised and what it is. Optional for this
+   project, but the quickest working result on the new machine.
+4. **The Phi.** The MPSS VM with the card passed through (`mic/guest/`,
+   `docs/qemu-passthrough.md`), then the first native run on the card
+   (`mic/native/`) and the host baseline on the 8175Ms (§5).
 
 If an 8175M does not start but the 4214s do, go back to §1a (CPU condition,
 socket) before considering §1b.
@@ -149,13 +157,17 @@ socket) before considering §1b.
 | Board | MD71-HB0: confirm in the manual that the BIOS has **VT-d**, **Above 4G Decoding** and SR-IOV/ARI options; identify which PCIe slots are wired to CPU0 vs CPU1 (block diagram) | passthrough needs VT-d; the 5110P's 8 GB BAR0 needs Above 4G decoding (`docs/qemu-passthrough.md`) |
 | Slot for the 5110P | electrically **x16**, attached to a populated CPU, room for a full-length double-width card | a narrower link slows host↔card transfers (offload, deploy) |
 | CPUs | 2× 8175M; the board's factory ICC_MAX is reported as 255 A (§1) | used parts: buy where returns are possible, test each alone (§1a) |
-| Memory | DDR4 ECC RDIMM, **one DIMM in each of the 6 channels per socket (12 DIMMs)**, same size and speed; the board has 16 slots, so follow the manual's population order. 64–128 GB total | an unbalanced or partly filled layout starves the host baseline of memory bandwidth |
-| Cooling (card) | directed front-to-back airflow through the 5110P's heatsink: server chassis or a shroud plus a high-static-pressure fan | the 5110P is passive, 225 W |
+| Memory | DDR4 ECC RDIMM, **one DIMM in each of the 6 channels per socket (12 DIMMs)**; the board has 16 slots, so follow the manual's population order. Planned layout in §2b | an unbalanced or partly filled layout starves the host baseline of memory bandwidth |
+| Cooling (card) | a sealed duct and a high-static-pressure fan on the 5110P, blowing in at the card's tail end (§2c) | the 5110P is passive, 225 W |
 | Cooling (CPUs) | LGA3647 coolers for the board's narrow/square ILM type (check the manual), rated for 240 W; the second cooler must not breathe the first one's exhaust, or use liquid cooling | the thread's most repeated warning for dual 240 W builds (§1a) |
-| Cooling (VRMs) | the board's VRM heatsinks present; a fan over them in a tower case | server boards expect chassis airflow (§1a) |
-| Power supply | 2 × 240 W CPUs + 225 W card + rest; roughly 1000 W or more of quality PSU (**1600 W with the GPU**, §2a), with the PCIe auxiliary connectors the card needs and both CPU EPS connectors | forum reports: ~180 W per 8175M without AVX, ~520–600 W for a dual high-TDC system under full load (§1a) |
-| Management | the board's BMC (remote console, power cycle) on the network | resetting a wedged card needs a power cycle; essential for `docs/kernel-port.md` work |
-| Storage | an SSD for the host OS and VM images (60 GB per MPSS VM) | |
+| Cooling (VRMs) | the board's VRM heatsinks present; a fan across the board (§2c) | server boards expect chassis airflow (§1a) |
+| Power supply | **Corsair HX1500i** (chosen): 1500 W, 80 PLUS Platinum. Budget in §2a. Cables: only Corsair cables made for this unit; count EPS outputs (board CPU inputs + GPU), the 2025 ATX 3.1 version lists 2 EPS cables, the 2022 version 3 | forum reports: ~180 W per 8175M without AVX, ~520–600 W for a dual high-TDC system under full load (§1a) |
+| Management | the board's BMC (remote console, power cycle) on its **own network, never exposed to the internet**; update its firmware in stage 1 (§1c) | resetting a wedged card needs a power cycle; essential for `docs/kernel-port.md` work |
+| Storage | an SSD, about 500 GB, for the host OS and VM images (60 GB per MPSS VM); NVMe if the board has an M.2 slot (check the manual) | |
+| Chassis | open steel test bench with rails (chosen): E-ATX (SSI EEB) mounting holes, standoffs only at the board's holes, PSU bolted to the frame | §2c |
+| Wall power meter | plug-in meter | whole-system watts for the results (performance per watt vs the Phi) and the circuit limit (§2a) |
+| Tools and consumables | torque screwdriver with a Torx T30 bit (LGA3647 cooler screws, 1.2–1.3 N·m, post-455708); fresh thermal paste; anti-static strap; a USB stick for the BIOS update | |
+| Networking | the board's onboard Ethernet is enough; 10 GbE is optional and costs a PCIe slot | the project moves little data over the network |
 | Host OS | a current Linux with KVM, QEMU, libvirt, pciutils, numactl, dmidecode | |
 
 ### 2a. Optional NVIDIA GPU (Tesla T40)
@@ -183,11 +195,68 @@ logs it), and record which one it is.
 | board, BMC, 12 DIMMs, SSDs, fans | 100–150 W | ~150 W |
 | **total** | **~1,065–1,115 W** | **~1,210 W** |
 
-PSU: **1600 W**, 80 PLUS Platinum or Titanium, modular, with enough EPS
-outputs for the board's CPU inputs plus the GPU, and the 8-pin + 6-pin PCIe
-the 5110P needs. With a T4 instead, 1300 W is enough. At the wall the machine
-can draw about 1.3 kW: on a 120 V / 15 A circuit (about 1,440 W continuous)
-give it its own circuit.
+PSU: the chosen **HX1500i** (1500 W, 80 PLUS Platinum, modular) carries this
+at about 75% sustained and 80% at peaks; 1600 W would add margin, and with a
+T4 instead of the 260 W card 1300 W is enough. Connectors to count on the
+unit: EPS outputs for the board's CPU inputs plus the GPU, and the 8-pin +
+6-pin PCIe the 5110P needs (two separate cables). The CPU and PCIe cables share
+sockets on the PSU side but are wired differently at the device end: never put
+a PCIe cable in an EPS socket or the reverse, and use only Corsair cables made
+for this unit. The HX1500i also reports its output power over USB; the Linux
+`corsair-psu` hwmon driver may expose it in `sensors` (**UNVERIFIED** for this
+unit). At the wall the machine can draw about 1.3 kW: on a 120 V / 15 A
+circuit (about 1,440 W continuous) give it its own circuit.
+
+### 2b. Memory layout (planned)
+
+Parts: 8× 8 GB DDR4 RDIMM (bought) plus the 2× 8 GB SK hynix
+HMA81GR7CJR8N-VK (1Rx8, PC4-2666) and 2× 16 GB HMA82GR7DJR4N-XN (1Rx4,
+PC4-3200) already owned. Decoded from SK hynix part numbers; check the labels.
+
+| socket | DIMMs | channels | capacity | role |
+|--------|-------|----------|----------|------|
+| CPU0 | 6× 8 GB, identical | 6 of 6 | 48 GB | host baseline (`numactl --cpunodebind=0 --membind=0`) |
+| CPU1 | 4× 8 GB + 2× 16 GB | 6 of 6 | 64 GB | host OS, MPSS VM |
+
+- The new sticks must be registered ECC RDIMMs (not LRDIMM or UDIMM),
+  PC4-2666V or faster. A 2400T stick pulls its socket down to 2400. Ideally
+  all one part number; at least the six on CPU0 identical.
+- Memory runs at 2666 with the 8175Ms and 2400 with the 4214s.
+- On CPU1 only the first 48 GB is 6-channel interleaved, and mixing x4 with x8
+  DIMMs may disable advanced RAS features (BELIEF; check the manual). Neither
+  matters for that socket's role.
+- `host-check.sh` passes `memory` with 12 DIMMs and logs each DIMM's
+  configured speed. Record the layout with the results.
+
+### 2c. Cooling on an open test bench
+
+On an open bench nothing gets airflow unless a fan is pointed at it. Plan, all
+BELIEF until temperatures are measured under load:
+
+- **Passive cards (5110P, GPU).** 3D-printed ducts sealed to each card's
+  shroud, air in at the tail end (away from the bracket), out through the
+  bracket. High-static-pressure fans: e.g. Noctua NF-F12 industrialPPC-3000 or
+  NF-A12x25 at full speed (120 mm), the industrialPPC 92 mm models, or a radial
+  blower. Low-speed quiet fans will not move enough air through the fins.
+- **Duct material: PETG or ASA, not PLA** (PLA softens around 55–60 °C).
+- **Duct fans at a fixed speed**, not controlled by the BMC: the BMC sees CPU
+  and board temperatures, not card temperatures. Use a header set to 100%, a
+  separate controller, or PSU power. If the BMC treats slow fans as failed and
+  cycles all fans to full, lower its fan thresholds with `ipmitool` (operator
+  step, not scripted).
+- **The rest of the board:** one or two 120/140 mm fans across the CPU, VRM,
+  DIMM and chipset area (the thread warns about server boards in desktop use
+  without VRM airflow, §1a).
+- **CPU coolers:** orient them so the second does not take in the first one's
+  exhaust; compare both package temperatures under load.
+- **Mechanics:** screw both cards to the bench's bracket rail and support the
+  duct end from a rail; keep the GPU and the 5110P in non-adjacent slots.
+  Riser cables, if any: PCIe Gen3 x16 rated, short.
+- **Watch during the first long runs:** the Phi with `micsmc` in the MPSS VM,
+  the GPU with `nvidia-smi`, CPUs and VRMs through the BMC. Both cards throttle
+  and then shut down when hot; a throttled run would understate the Phi.
+- Dust collects quickly on dense fins on an open bench: clean them
+  periodically.
 
 ## 3. BIOS settings (operator)
 

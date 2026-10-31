@@ -178,6 +178,10 @@ in this repository. `mic/host/host-check.sh` (read-only) records the RAPL
 package limits and microcode, together with the passthrough prerequisites.
 The board's original Xeon Silver 4214s are kept as known-good CPUs: the board,
 cards and IOMMU are proven on them before the swap (`docs/host-build.md` §1c);
-no host baseline is taken on them. An optional NVIDIA GPU is reported by the
+no host baseline is taken on them. Bring-up runs in four stages, each ending
+with something working: board on the 4214s, the 8175Ms, the GPU, then the Phi
+(§1c). Memory: 12 DIMMs, CPU0 six identical 8 GB for the baseline, CPU1 mixed
+(§2b). Chassis: an open steel bench with ducted fans on the passive cards
+(§2c); PSU: Corsair HX1500i. An optional NVIDIA GPU is reported by the
 host check (never a FAIL) and sized into a 1600 W PSU budget (§2a); GPU
 results, if any, are a separate record family.
